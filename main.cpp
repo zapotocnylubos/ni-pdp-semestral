@@ -29,8 +29,7 @@ struct Graph {
         infile.close();
     }
 
-    [[nodiscard]] int vertexWeight(const std::vector<bool> &cut, int vertex) const {
-        int cutSize = (int) cut.size();
+    [[nodiscard]] int vertexWeight(const std::vector<bool> &cut, int cutSize, int vertex) const {
         int weight = 0;
         for (int i = 0; i < cutSize; i++) {
             if (cut[vertex] == cut[i]) continue;
@@ -39,15 +38,15 @@ struct Graph {
         return weight;
     }
 
-    [[nodiscard]] int cutWeight(const std::vector<bool> &cut) const {
-        int cutSize = (int) cut.size();
-        int weight = 0;
-        for (int i = 0; i < cutSize; i++) {
-            if (!cut[i]) continue;
-            weight += vertexWeight(cut, i);
-        }
-        return weight;
-    }
+//    [[nodiscard]] int cutWeight(const std::vector<bool> &cut) const {
+//        int cutSize = (int) cut.size();
+//        int weight = 0;
+//        for (int i = 0; i < cutSize; i++) {
+//            if (!cut[i]) continue;
+//            weight += vertexWeight(cut, i);
+//        }
+//        return weight;
+//    }
 };
 
 unsigned long long recursiveCounter;
@@ -96,47 +95,40 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
     int lowerBound = 0;
     for (int i = index + 1; i < graph.size; i++) {
         // here problem
-        cut.push_back(true);
-        int with = graph.vertexWeight(cut, i);
-        cut.pop_back();
 
-        cut.push_back(false);
-        int without = graph.vertexWeight(cut, i);
-        cut.pop_back();
+        int without = graph.vertexWeight(cut, index, i);
+
+        cut[i] = true;
+        int with = graph.vertexWeight(cut, index, i);
+        cut[i] = false;
 
         lowerBound += std::min(with, without);
     }
 
-//    if (currentWeight + lowerBound >= bestWeight) {
-//        lowerBoundCounter++;
-//        return;
-//    }
-
-    // try without this vertex
-    cut.push_back(false);
+    if (currentWeight + lowerBound >= bestWeight) {
+        lowerBoundCounter++;
+        return;
+    }
 
     // try without this vertex (need to extend current cut)
     DFS_BB(graph, maxPartitionSize,
            cut, count, index + 1,
-           currentWeight + graph.vertexWeight(cut, index), bestWeight);
-
-    // restore the status of the cut
-    cut.pop_back();
+           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 
     // try with this vertex
-    cut.push_back(true);
+    cut[index] = true;
 
     // try with this vertex (need to extend current cut)
     DFS_BB(graph, maxPartitionSize,
            cut, count + 1, index + 1,
-           currentWeight + graph.vertexWeight(cut, index), bestWeight);
+           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 
     // restore the status of the cut
-    cut.pop_back();
+    cut[index] = false;
 }
 
 int DFS_BB(const Graph &g, int maxPartitionSize) {
-    std::vector<bool> cut;
+    auto cut = std::vector<bool>(g.size, false);
     int bestWeight = std::numeric_limits<int>::max();
 
     DFS_BB(g, maxPartitionSize, cut, 0, 0, 0, bestWeight);
