@@ -38,6 +38,23 @@ struct Graph {
         return weight;
     }
 
+    [[nodiscard]] int cutLowerBound(std::vector<bool> &cut, int index) const {
+        //generate lower bound for vertex cut
+        int lowerBound = 0;
+        for (int i = index; i < size; i++) {
+            // here problem
+
+            int without = vertexWeight(cut, index, i);
+
+            cut[i] = true;
+            int with = vertexWeight(cut, index, i);
+            cut[i] = false;
+
+            lowerBound += std::min(with, without);
+        }
+        return lowerBound;
+    }
+
 //    [[nodiscard]] int cutWeight(const std::vector<bool> &cut) const {
 //        int cutSize = (int) cut.size();
 //        int weight = 0;
@@ -92,28 +109,12 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
     }
 
     //generate lower bound for vertex cut
-    int lowerBound = 0;
-    for (int i = index + 1; i < graph.size; i++) {
-        // here problem
-
-        int without = graph.vertexWeight(cut, index, i);
-
-        cut[i] = true;
-        int with = graph.vertexWeight(cut, index, i);
-        cut[i] = false;
-
-        lowerBound += std::min(with, without);
-    }
+    int lowerBound = graph.cutLowerBound(cut, index);
 
     if (currentWeight + lowerBound >= bestWeight) {
         lowerBoundCounter++;
         return;
     }
-
-    // try without this vertex (need to extend current cut)
-    DFS_BB(graph, maxPartitionSize,
-           cut, count, index + 1,
-           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 
     // try with this vertex
     cut[index] = true;
@@ -125,6 +126,11 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
 
     // restore the status of the cut
     cut[index] = false;
+
+    // try without this vertex (need to extend current cut)
+    DFS_BB(graph, maxPartitionSize,
+           cut, count, index + 1,
+           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 }
 
 int DFS_BB(const Graph &g, int maxPartitionSize) {
