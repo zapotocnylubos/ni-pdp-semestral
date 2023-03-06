@@ -70,6 +70,11 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
         return;
     }
 
+    // end stop of the recursion
+    if (count > maxPartitionSize) {
+        return;
+    }
+
     if (index == graph.size) {
         if (count != maxPartitionSize) {
             return;
@@ -90,6 +95,7 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
     //generate lower bound for vertex cut
     int lowerBound = 0;
     for (int i = index + 1; i < graph.size; i++) {
+        // here problem
         cut.push_back(true);
         int with = graph.vertexWeight(cut, i);
         cut.pop_back();
@@ -101,10 +107,10 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
         lowerBound += std::min(with, without);
     }
 
-    if (currentWeight + lowerBound >= bestWeight) {
-        lowerBoundCounter++;
-        return;
-    }
+//    if (currentWeight + lowerBound >= bestWeight) {
+//        lowerBoundCounter++;
+//        return;
+//    }
 
     // try without this vertex
     cut.push_back(false);
