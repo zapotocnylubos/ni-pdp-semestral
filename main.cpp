@@ -29,7 +29,7 @@ struct Graph {
         infile.close();
     }
 
-    [[nodiscard]] int vertexWeight(const std::vector<bool> &cut, int cutSize, int vertex) const {
+    [[nodiscard]] int vertexWeight(const bool *cut, int cutSize, int vertex) const {
         int weight = 0;
         for (int i = 0; i < cutSize; i++) {
             if (cut[vertex] == cut[i]) continue;
@@ -38,18 +38,21 @@ struct Graph {
         return weight;
     }
 
-    [[nodiscard]] int cutLowerBound(std::vector<bool> &cut, int index) const {
+    [[nodiscard]] int cutLowerBound(bool *cut, int from) const {
         //generate lower bound for vertex cut
         int lowerBound = 0;
-        for (int i = index; i < size; i++) {
-            // here problem
+        for (int vertex = from; vertex < size; vertex++) {
+            // try without this vertex
+            int without = vertexWeight(cut, from, vertex);
 
-            int without = vertexWeight(cut, index, i);
+            // try with this vertex
+            cut[vertex] = true;
+            int with = vertexWeight(cut, from, vertex);
 
-            cut[i] = true;
-            int with = vertexWeight(cut, index, i);
-            cut[i] = false;
+            // restore cut
+            cut[vertex] = false;
 
+            // sum up minimums of the possible states
             lowerBound += std::min(with, without);
         }
         return lowerBound;
@@ -71,7 +74,7 @@ unsigned long long upperBoundCounter;
 unsigned long long lowerBoundCounter;
 
 void DFS_BB(const Graph &graph, int maxPartitionSize,
-            std::vector<bool> &cut, int count, int index,
+            bool *cut, int count, int index,
             int currentWeight, int &bestWeight) {
     recursiveCounter++;
 
@@ -100,8 +103,8 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
             bestWeight = currentWeight;
         }
 
-        for (auto i: cut) {
-            std::cout << i << " ";
+        for (int i = 0; i < index; i++) {
+            std::cout << cut[i] << " ";
         }
 
         std::cout << "-> " << currentWeight << std::endl;
@@ -134,10 +137,11 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
 }
 
 int DFS_BB(const Graph &g, int maxPartitionSize) {
-    auto cut = std::vector<bool>(g.size, false);
+    auto cut = new bool[g.size];// std::vector<bool>(g.size, false);
     int bestWeight = std::numeric_limits<int>::max();
 
     DFS_BB(g, maxPartitionSize, cut, 0, 0, 0, bestWeight);
+    delete[] cut;
     return bestWeight;
 }
 
