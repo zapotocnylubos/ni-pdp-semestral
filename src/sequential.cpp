@@ -3,12 +3,13 @@
 #include <vector>
 #include <fstream>
 #include <limits>
+#include <chrono>
 
 struct Graph {
     int size;
-    int **graph;
+    int **data;
 
-    explicit Graph(int **graph, int size) : graph(), size(size) {}
+    explicit Graph(int **graph, int size) : data(), size(size) {}
 
     explicit Graph(const std::string &file) {
         std::ifstream infile(file);
@@ -19,14 +20,14 @@ struct Graph {
 
         infile >> size;
 
-        graph = new int *[size];
+        data = new int *[size];
         for (int i = 0; i < size; i++) {
-            graph[i] = new int[size];
+            data[i] = new int[size];
         }
 
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                infile >> graph[i][j];
+                infile >> data[i][j];
             }
         }
 
@@ -35,16 +36,16 @@ struct Graph {
 
     ~Graph() {
         for (int i = 0; i < size; i++) {
-            delete[] graph[i];
+            delete[] data[i];
         }
-        delete[] graph;
+        delete[] data;
     }
 
     [[nodiscard]] int vertexWeight(const bool *cut, int cutSize, int vertex) const {
         int weight = 0;
         for (int i = 0; i < cutSize; i++) {
             if (cut[vertex] == cut[i]) continue;
-            weight += graph[vertex][i];
+            weight += data[vertex][i];
         }
         return weight;
     }
@@ -166,10 +167,16 @@ int main(int argc, char **argv) {
 
     auto g = Graph(file);
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     int bestWeight = DFS_BB(g, maxPartitionSize);
+
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = duration_cast<std::chrono::milliseconds>(stop - start);
 
     std::cout << "Global minimum is: " << bestWeight << std::endl;
 
+    std::cout << "Time: " << duration.count() << "ms" << std::endl;
     std::cout << "Count of recursive calls: " << recursiveCounter << std::endl;
     std::cout << "Count of upper bound cuts: " << upperBoundCounter << std::endl;
     std::cout << "Count of lower bound cuts: " << lowerBoundCounter << std::endl;
