@@ -2,12 +2,10 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <limits>
 
 struct Graph {
     int size;
-
-    // TODO: fixed size simple int 2D array
-//    std::vector<std::vector<int>> graph;
     int **graph;
 
     explicit Graph(int **graph, int size) : graph(), size(size) {}
