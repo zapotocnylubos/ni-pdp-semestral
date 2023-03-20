@@ -100,12 +100,6 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
         return;
     }
 
-    // end stop of the recursion
-//    if (count > maxPartitionSize) {
-//        countBiggerStopCounter++;
-//        return;
-//    }
-
     if (count == maxPartitionSize) {
         // currentWeight was pre-computed for whole cut
         if (currentWeight >= bestWeight) {
