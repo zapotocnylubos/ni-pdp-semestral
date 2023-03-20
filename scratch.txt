@@ -1,33 +1,16 @@
 sequential (10, 30_10)
 
 Global minimum is: 4636
-Time: 2068ms
+Time: 2032ms
 Count of recursive calls: 2748827
 Count of upper bound cuts: 488540
 Count of lower bound cuts: 553909
 
 
-
 task (10, 30_10) - 4 threads
 
 Global minimum is: 4636
-Time: 9155ms
-Count of recursive calls: 2846709
-Count of upper bound cuts: 500335
-Count of lower bound cuts: 578017
-
-task (10, 30_10) - 8 threads
-
-Global minimum is: 4636
-Time: 12281ms
-Count of recursive calls: 3235111
-Count of upper bound cuts: 560476
-Count of lower bound cuts: 663341
-
-task (10, 30_10) - 2 threads
-
-Global minimum is: 4636
-Time: 14495ms
-Count of recursive calls: 2831651
-Count of upper bound cuts: 502317
-Count of lower bound cuts: 571825
+Time: 857ms
+Count of recursive calls: 3024917
+Count of upper bound cuts: 529171
+Count of lower bound cuts: 611742

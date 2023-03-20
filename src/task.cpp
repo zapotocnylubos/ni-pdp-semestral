@@ -18,7 +18,7 @@ struct Cut {
     };
 
     Cut(const Cut &cut) : data(new bool[cut.size]), size(cut.size) {
-//        #pragma omp parallel for
+//        #pragma omp parallel for default(none) shared(cut)
         for (int i = 0; i < cut.size; i++) {
             data[i] = cut[i];
         }
@@ -66,7 +66,7 @@ struct Graph {
         for (int i = 0; i < size; i++) {
             data[i] = new int[size];
             for (int j = 0; j < size; j++) {
-                data[i][j] = graph.data[i][j];
+                data[i][j] = graph[i][j];
             }
         }
     }
@@ -82,9 +82,10 @@ struct Graph {
         return data[index];
     }
 
-    [[nodiscard]] int vertexWeight(Cut cut, int cutSize, int vertex) const {
+    [[nodiscard]] int vertexWeight(const Cut& cut, int cutSize, int vertex) const {
         int weight = 0;
 
+//        #pragma omp parallel for default(none) shared(cut, cutSize, vertex) reduction(+:weight)
         for (int i = 0; i < cutSize; i++) {
             if (cut[vertex] == cut[i]) continue;
             weight += data[vertex][i];
@@ -93,25 +94,26 @@ struct Graph {
         return weight;
     }
 
-    [[nodiscard]] int cutLowerBound(Cut cut, int from) const {
-        //generate lower bound for vertex cut
+    [[nodiscard]] int cutLowerBound(const Cut& cut, int from) const {
+        // generate lower bound for vertex cut
         int lowerBound = 0;
 
-//        #pragma omp parallel for firstprivate(cut, from, size) reduction(+:lowerBound)
+//        #pragma omp parallel default(none) shared(from) firstprivate(cut) reduction(+:lowerBound)
         for (int vertex = from; vertex < size; vertex++) {
+            int with, without;
+
             // try without this vertex
-            int without = vertexWeight(cut, from, vertex);
+            without = vertexWeight(cut, from, vertex);
 
             // try with this vertex
             cut[vertex] = true;
-            int with = vertexWeight(cut, from, vertex);
-
-            // restore cut
+            with = vertexWeight(cut, from, vertex);
             cut[vertex] = false;
 
             // sum up minimums of the possible states
             lowerBound += std::min(with, without);
         }
+
         return lowerBound;
     }
 
@@ -134,7 +136,7 @@ unsigned long long lowerBoundCounter;
 Graph *graph;
 int maxPartitionSize, bestWeight;
 
-void DFS_BB(Cut cut, int count, int index, int currentWeight) {
+void DFS_BB(const Cut& cut, int count, int index, int currentWeight) {
     #pragma omp atomic update
     recursiveCounter++;
 
