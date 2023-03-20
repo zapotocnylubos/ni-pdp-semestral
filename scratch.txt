@@ -29,7 +29,7 @@ Count of lower bound cuts: 17769340
 task (15, 30_12) - 4 threads
 
 Global minimum is: 13159
-Time: 29730ms
-Count of recursive calls: 99468999
-Count of upper bound cuts: 8962433
-Count of lower bound cuts: 18420427
+Time: 14193ms
+Count of recursive calls: 95994513
+Count of upper bound cuts: 8733943
+Count of lower bound cuts: 17776477
