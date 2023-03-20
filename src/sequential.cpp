@@ -83,16 +83,15 @@ unsigned long long recursiveCounter;
 unsigned long long upperBoundCounter;
 unsigned long long lowerBoundCounter;
 
-unsigned long long indexBiggerStopCounter;
-unsigned long long countBiggerStopCounter;
-unsigned long long countWeightNoImprovementStopCounter;
-unsigned long long countWeightImprovementStopCounter;
-
-// Pro dalsi ukol (paralelismus) se nesmi nic predavat referenci/pointerem
 void DFS_BB(const Graph &graph, int maxPartitionSize,
             bool *cut, int count, int index,
             int currentWeight, int &bestWeight) {
     recursiveCounter++;
+
+    // end stop of the recursion
+    if (index > graph.size) {
+        return;
+    }
 
     // this cannot be better solution
     if (currentWeight >= bestWeight) {
@@ -100,18 +99,21 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
         return;
     }
 
-    if (count == maxPartitionSize) {
-        // currentWeight was pre-computed for whole cut
-        if (currentWeight >= bestWeight) {
-            countWeightNoImprovementStopCounter++;
+    // end stop of the recursion
+    if (count > maxPartitionSize) {
+        return;
+    }
+
+    if (index == graph.size) {
+        if (count != maxPartitionSize) {
             return;
         }
 
-        countWeightImprovementStopCounter++;
+        if (currentWeight < bestWeight) {
+            bestWeight = currentWeight;
+        }
 
-        bestWeight = currentWeight;
-
-        for (int i = 0; i < graph.size; i++) {
+        for (int i = 0; i < index; i++) {
             std::cout << cut[i] << " ";
         }
 
@@ -119,22 +121,9 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
         return;
     }
 
-    // end stop of the recursion
-//    if (index == graph.size) {
-//        indexBiggerStopCounter++;
-//        return;
-//    }
-
-    // end stop of the recursion
-    if (index + 1 == graph.size) {
-//        indexBiggerStopCounter++;
-        return;
-    }
-
     //generate lower bound for vertex cut
     int lowerBound = graph.cutLowerBound(cut, index);
 
-    // there is no possibility for a better solution
     if (currentWeight + lowerBound >= bestWeight) {
         lowerBoundCounter++;
         return;
@@ -143,41 +132,22 @@ void DFS_BB(const Graph &graph, int maxPartitionSize,
     // try with this vertex
     cut[index] = true;
 
-    // calculate new weight
-    int nextWeight = currentWeight + graph.vertexWeight(cut, index, index);
-
-    // this can be better solution
-    if (nextWeight < bestWeight) {
-        if (count + 1 == maxPartitionSize && nextWeight < bestWeight) {
-            // pre-compute currentWeight for whole cut
-            nextWeight = graph.cutWeight(cut, graph.size);
-
-            if (nextWeight < bestWeight) {
-                // try with this vertex (need to extend current cut)
-                DFS_BB(graph, maxPartitionSize, cut, count + 1, index + 1, nextWeight, bestWeight);
-            }
-        } else {
-            DFS_BB(graph, maxPartitionSize, cut, count + 1, index + 1, nextWeight, bestWeight);
-        }
-    }
+    // try with this vertex (need to extend current cut)
+    DFS_BB(graph, maxPartitionSize,
+           cut, count + 1, index + 1,
+           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 
     // restore the status of the cut
     cut[index] = false;
 
-    // calculate new weight
-    nextWeight = currentWeight + graph.vertexWeight(cut, index, index);
-
-    // this cannot be better solution
-    if (nextWeight >= bestWeight) {
-        return;
-    }
-
     // try without this vertex (need to extend current cut)
-    DFS_BB(graph, maxPartitionSize, cut, count, index + 1, nextWeight, bestWeight);
+    DFS_BB(graph, maxPartitionSize,
+           cut, count, index + 1,
+           currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
 }
 
 int DFS_BB(const Graph &g, int maxPartitionSize) {
-    auto cut = new bool[g.size];// std::vector<bool>(g.size, false);
+    auto cut = new bool[g.size];
     int bestWeight = std::numeric_limits<int>::max();
 
     DFS_BB(g, maxPartitionSize, cut, 0, 0, 0, bestWeight);
@@ -203,9 +173,5 @@ int main(int argc, char **argv) {
     std::cout << "Count of recursive calls: " << recursiveCounter << std::endl;
     std::cout << "Count of upper bound cuts: " << upperBoundCounter << std::endl;
     std::cout << "Count of lower bound cuts: " << lowerBoundCounter << std::endl;
-    std::cout << "Count of bigger index recursion stops: " << indexBiggerStopCounter << std::endl;
-    std::cout << "Count of bigger count recursion stops: " << countBiggerStopCounter << std::endl;
-    std::cout << "Count of weight no improvement recursion stops: " << countWeightNoImprovementStopCounter << std::endl;
-    std::cout << "Count of weight improvement recursion stops: " << countWeightImprovementStopCounter << std::endl;
     return 0;
 }
