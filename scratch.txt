@@ -14,3 +14,22 @@ Time: 857ms
 Count of recursive calls: 3024917
 Count of upper bound cuts: 529171
 Count of lower bound cuts: 611742
+
+----------------------------------------
+
+sequential (15, 30_12)
+
+Global minimum is: 13159
+Time: 58926ms
+Count of recursive calls: 95969071
+Count of upper bound cuts: 8735601
+Count of lower bound cuts: 17769340
+
+
+task (15, 30_12) - 4 threads
+
+Global minimum is: 13159
+Time: 29730ms
+Count of recursive calls: 99468999
+Count of upper bound cuts: 8962433
+Count of lower bound cuts: 18420427
