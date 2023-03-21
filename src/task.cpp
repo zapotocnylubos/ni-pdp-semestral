@@ -82,7 +82,7 @@ struct Graph {
         return data[index];
     }
 
-    [[nodiscard]] int vertexWeight(const Cut& cut, int cutSize, int vertex) const {
+    [[nodiscard]] int vertexWeight(const Cut &cut, int cutSize, int vertex) const {
         int weight = 0;
 
 //        #pragma omp parallel for default(none) shared(cut, cutSize, vertex) reduction(+:weight)
@@ -94,7 +94,7 @@ struct Graph {
         return weight;
     }
 
-    [[nodiscard]] int cutLowerBound(const Cut& cut, int from) const {
+    [[nodiscard]] int cutLowerBound(const Cut &cut, int from) const {
         // generate lower bound for vertex cut
         int lowerBound = 0;
 
@@ -136,7 +136,7 @@ unsigned long long lowerBoundCounter;
 Graph *graph;
 int maxPartitionSize, bestWeight;
 
-void DFS_BB(const Cut& cut, int count, int index, int currentWeight) {
+void DFS_BB(const Cut &cut, int count, int index, int currentWeight) {
     #pragma omp atomic update
     recursiveCounter++;
 
@@ -167,7 +167,6 @@ void DFS_BB(const Cut& cut, int count, int index, int currentWeight) {
             if (currentWeight < bestWeight) {
                 bestWeight = currentWeight;
             }
-//            std::cout << '[' << omp_get_thread_num() << "," << omp_get_num_threads() << "] ";
         }
 
         for (int i = 0; i < index; i++) {
@@ -219,7 +218,6 @@ int DFS_BB() {
     {
         #pragma omp single
         DFS_BB(Cut(graph->size), 0, 0, 0);
-        #pragma omp taskwait
     }
 
     return bestWeight;
