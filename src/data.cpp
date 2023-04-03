@@ -30,6 +30,13 @@ struct Cut {
     bool &operator[](int index) const {
         return data[index];
     }
+
+    friend std::ostream &operator<<(std::ostream &os, const Cut &cut) {
+        for (int i = 0; i < cut.size; i++) {
+            os << cut[i] << " ";
+        }
+        return os;
+    }
 };
 
 struct State {
@@ -178,11 +185,7 @@ void DFS_BB(const State &state) {
             }
         }
 
-        for (int i = 0; i < index; i++) {
-            std::cout << cut[i] << " ";
-        }
-
-        std::cout << "-> " << currentWeight << std::endl;
+        std::cout << cut << "-> " << currentWeight << std::endl;
         return;
     }
 
@@ -216,12 +219,36 @@ void DFS_BB(const State &state) {
 
 int DFS_BB() {
     bestWeight = std::numeric_limits<int>::max();
+
     auto initialStates = std::vector<State>();
     initialStates.push_back({Cut(graph->size), 0, 0, 0});
 
-    #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) firstprivate(graph) shared(initialStates)
+//    const int initialStatesSufficientCount = 100;
+
+    for (int a = 0 ; a < 5; a++) {
+        int k = (int) initialStates.size();
+        for (int l = a; l < k; l++) {
+            auto state = initialStates[l];
+            for (int i = state.index; i < graph->size - maxPartitionSize; i++) {
+//                if (initialStates.size() > )
+                Cut cut = state.cut;
+                cut[i] = true;
+                int weight = state.currentWeight + graph->vertexWeight(cut, graph->size, i);
+                initialStates.push_back({cut, state.count + 1, state.index + i + 1, weight});
+            }
+        }
+    }
+
     for (const auto &state: initialStates) {
-//        DFS_BB(Cut(graph->size), 0, 0, 0);
+        auto cut = state.cut;
+        std::cout << cut << std::endl;
+    }
+
+//    return 0;
+
+    #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
+    for (const auto &state: initialStates) {
+//        DFS_BB({Cut(graph->size), 0, 0, 0});
         DFS_BB(state);
     }
 
