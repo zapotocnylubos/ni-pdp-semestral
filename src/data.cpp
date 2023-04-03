@@ -6,6 +6,7 @@
 #include <chrono>
 #include <queue>
 #include <algorithm>
+#include <cmath>
 
 #include <omp.h>
 
@@ -240,7 +241,7 @@ void DFS_BB(const State &state) {
     }
 }
 
-int DFS_BB(int countOfInitialStates = 2222) {
+int DFS_BB(int countOfInitialStates = (int) std::pow(2, 5)) {
     bestWeight = std::numeric_limits<int>::max();
 
     auto initialStatesQ = std::queue<State>();
@@ -280,12 +281,7 @@ int DFS_BB(int countOfInitialStates = 2222) {
         initialStatesQ.pop();
     }
 
-    //std::sort(initialStates.begin(), initialStates.end());
-
-    int i = 0;
-    for (const auto &state: initialStates) {
-        std::cout << i++ << " - " << state << std::endl;
-    }
+//    std::sort(initialStates.begin(), initialStates.end());
 
     #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
     for (const auto &state: initialStates) {
