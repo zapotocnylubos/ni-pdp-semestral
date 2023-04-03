@@ -240,7 +240,7 @@ void DFS_BB(const State &state) {
     }
 }
 
-int DFS_BB(int countOfInitialStates = 1) {
+int DFS_BB(int countOfInitialStates = 2222) {
     bestWeight = std::numeric_limits<int>::max();
 
     auto initialStatesQ = std::queue<State>();
@@ -253,20 +253,22 @@ int DFS_BB(int countOfInitialStates = 1) {
         initialStatesQ.pop();
         --createdInitialStates;
 
+        int withoutAccumulator = state.currentWeight;
+
         for (int i = state.index; i < graph->size; i++) {
             Cut cut = state.cut;
 
             // try with this vertex
             cut[i] = true;
-            int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index + i + 1, i);
-            initialStatesQ.push({cut, state.count + 1, state.index + i + 1, nextWeight});
+            int nextWeight = withoutAccumulator + graph->vertexWeight(cut, i, i);
+            initialStatesQ.push({cut, state.count + 1, i + 1, nextWeight});
 
             createdInitialStates++;
 
             // try without this vertex
             cut[i] = false;
-            nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index + i + 1, i);
-            initialStatesQ.push({cut, state.count, state.index + i + 1, nextWeight});
+            nextWeight = (withoutAccumulator += graph->vertexWeight(cut, i, i));
+            initialStatesQ.push({cut, state.count, i + 1, nextWeight});
 
             createdInitialStates++;
         }
