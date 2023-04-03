@@ -30,7 +30,7 @@ struct Cut {
         delete[] data;
     }
 
-    Cut& operator=(const Cut& cut) {
+    Cut &operator=(const Cut &cut) {
         if (this != &cut) {
             delete[] data;
             data = new bool[cut.size];
@@ -64,7 +64,7 @@ struct State {
             cut(cut), count(count),
             index(index), currentWeight(currentWeight) {}
 
-    State& operator=(const State& state) {
+    State &operator=(const State &state) {
         if (this != &state) {
             cut = state.cut;
             count = state.count;
@@ -235,13 +235,14 @@ void DFS_BB(const State &state) {
         return;
     }
 
+
     // try with this vertex
     cut[index] = true;
 
     // compute weight with this vertex
     int nextWeight = currentWeight + graph->vertexWeight(cut, index, index);
 
-    if (nextWeight < bestWeight && count + 1 <= maxPartitionSize) {
+    if (nextWeight < bestWeight) {
         DFS_BB(State(cut, count + 1, index + 1, nextWeight));
     }
 
@@ -256,47 +257,38 @@ void DFS_BB(const State &state) {
     }
 }
 
-int DFS_BB(int countOfInitialStates = (int) std::pow(2, 5)) {
+int DFS_BB() {
     bestWeight = std::numeric_limits<int>::max();
 
+    auto initialStates = std::vector<State>();
     auto initialStatesQ = std::queue<State>();
+
     initialStatesQ.push(State(Cut(graph->size), 0, 0, 0));
 
-    int createdInitialStates = 0;
-
-    while (createdInitialStates < countOfInitialStates) {
+    while (!initialStatesQ.empty() && initialStatesQ.front().index <= (2 * maxPartitionSize) / 3) {
         auto state = initialStatesQ.front();
         initialStatesQ.pop();
-        createdInitialStates--;
 
-        int withoutAccumulator = state.currentWeight;
+        Cut cut = state.cut;
 
-        for (int i = state.index; i < graph->size - maxPartitionSize + state.count; i++) {
-            Cut cut = state.cut;
+        int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
+        initialStatesQ.push(State(cut, state.count, state.index + 1, nextWeight));
 
-            // try with this vertex
-            cut[i] = true;
-            int nextWeight = withoutAccumulator + graph->vertexWeight(cut, i, i);
-            initialStatesQ.push(State(cut, state.count + 1, i + 1, nextWeight));
+        if (state.count + 1 > maxPartitionSize) continue;
 
-            createdInitialStates++;
-
-            // try without this vertex
-            cut[i] = false;
-            nextWeight = (withoutAccumulator += graph->vertexWeight(cut, i, i));
-            initialStatesQ.push(State(cut, state.count, i + 1, nextWeight));
-
-            createdInitialStates++;
-        }
+        cut[state.index] = true;
+        nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
+        initialStatesQ.push(State(cut, state.count + 1, state.index + 1, nextWeight));
     }
 
-    auto initialStates = std::vector<State>();
     while (!initialStatesQ.empty()) {
         initialStates.push_back(initialStatesQ.front());
         initialStatesQ.pop();
     }
 
-    for (const auto& state: initialStates) {
+    std::cout << initialStates.size() << std::endl;
+
+    for (const auto &state: initialStates) {
         std::cout << state << std::endl;
     }
 
@@ -304,14 +296,7 @@ int DFS_BB(int countOfInitialStates = (int) std::pow(2, 5)) {
 
     std::sort(initialStates.begin(), initialStates.end());
 
-    // print all initial states
-    for (const auto& state: initialStates) {
-        std::cout << state << std::endl;
-    }
-
-    std::cout << std::endl << std::endl << std::endl;
-
-    #pragma omp parallel for num_threads(4) schedule(static, 4) default(none) shared(bestWeight, initialStates)
+    #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
     for (const auto &state: initialStates) {
         DFS_BB(state);
     }
@@ -333,6 +318,8 @@ int main(int argc, char **argv) {
     auto start = std::chrono::high_resolution_clock::now();
 
     bestWeight = DFS_BB();
+
+    delete graph;
 
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
