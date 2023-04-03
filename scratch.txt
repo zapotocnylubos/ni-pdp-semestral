@@ -17,7 +17,7 @@ Count of lower bound cuts: 611742
 
 ----------------------------------------
 
-sequential (15, 30_12)
+sequential (15, 30_20)
 
 Global minimum is: 13159
 Time: 58926ms
@@ -26,10 +26,73 @@ Count of upper bound cuts: 8735601
 Count of lower bound cuts: 17769340
 
 
-task (15, 30_12) - 4 threads
+task (15, 30_20) - 4 threads
 
 Global minimum is: 13159
 Time: 14193ms
 Count of recursive calls: 95994513
 Count of upper bound cuts: 8733943
 Count of lower bound cuts: 17776477
+
+
+
+----------------------------------------
+
+data (15, 30_10) - 4 threads
+
+Global minimum is: 4636
+Time: 3039ms
+Count of recursive calls: 3671951
+Count of upper bound cuts: 681988
+Count of lower bound cuts: 722566
+
+newer
+
+Global minimum is: 4636
+Time: 2867ms
+Count of recursive calls: 3111668
+Count of upper bound cuts: 0
+Count of lower bound cuts: 739447
+
+newer newer
+
+Global minimum is: 4636
+Time: 3243ms
+Count of recursive calls: 9553714
+Count of upper bound cuts: 0
+Count of lower bound cuts: 2139112
+
+newer newer newer (2^8 initial)
+
+Global minimum is: 4636
+Time: 4349ms
+Count of recursive calls: 21641477
+Count of upper bound cuts: 0
+Count of lower bound cuts: 4727824
+
+newer newer newer (2^5 initial)
+
+Global minimum is: 4636
+Time: 2067ms
+Count of recursive calls: 9559923
+Count of upper bound cuts: 0
+Count of lower bound cuts: 2141044
+
+
+
+data (15, 30_20) - 4 threads
+
+Global minimum is: 13159
+Time: 87564ms
+Count of recursive calls: 121924012
+Count of upper bound cuts: 11851947
+Count of lower bound cuts: 22787595
+
+newer
+
+Global minimum is: 13159
+Time: 87624ms
+Count of recursive calls: 110132776
+Count of upper bound cuts: 0
+Count of lower bound cuts: 22802528
+

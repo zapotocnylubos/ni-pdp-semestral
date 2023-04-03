@@ -30,6 +30,18 @@ struct Cut {
         delete[] data;
     }
 
+    Cut& operator=(const Cut& cut) {
+        if (this != &cut) {
+            delete[] data;
+            data = new bool[cut.size];
+            size = cut.size;
+            for (int i = 0; i < cut.size; i++) {
+                data[i] = cut[i];
+            }
+        }
+        return *this;
+    }
+
     bool &operator[](int index) const {
         return data[index];
     }
@@ -47,6 +59,20 @@ struct State {
     int count;
     int index;
     int currentWeight;
+
+    State(const Cut &cut, int count, int index, int currentWeight) :
+            cut(cut), count(count),
+            index(index), currentWeight(currentWeight) {}
+
+    State& operator=(const State& state) {
+        if (this != &state) {
+            cut = state.cut;
+            count = state.count;
+            index = state.index;
+            currentWeight = state.currentWeight;
+        }
+        return *this;
+    }
 
     bool operator<(const State &state) const {
         return currentWeight < state.currentWeight;
@@ -139,17 +165,6 @@ struct Graph {
 
         return lowerBound;
     }
-
-    [[nodiscard]] int cutWeight(const Cut &cut) const {
-        int weight = 0;
-
-        for (int i = 0; i < cut.size; i++) {
-            if (!cut[i]) continue;
-            weight += vertexWeight(cut, cut.size, i);
-        }
-
-        return weight;
-    }
 };
 
 unsigned long long recursiveCounter;
@@ -227,7 +242,7 @@ void DFS_BB(const State &state) {
     int nextWeight = currentWeight + graph->vertexWeight(cut, index, index);
 
     if (nextWeight < bestWeight && count + 1 <= maxPartitionSize) {
-        DFS_BB({cut, count + 1, index + 1, nextWeight});
+        DFS_BB(State(cut, count + 1, index + 1, nextWeight));
     }
 
     // try without this vertex
@@ -237,7 +252,7 @@ void DFS_BB(const State &state) {
     nextWeight = currentWeight + graph->vertexWeight(cut, index, index);
 
     if (nextWeight < bestWeight) {
-        DFS_BB({cut, count, index + 1, nextWeight});
+        DFS_BB(State(cut, count, index + 1, nextWeight));
     }
 }
 
@@ -245,31 +260,31 @@ int DFS_BB(int countOfInitialStates = (int) std::pow(2, 5)) {
     bestWeight = std::numeric_limits<int>::max();
 
     auto initialStatesQ = std::queue<State>();
-    initialStatesQ.push({Cut(graph->size), 0, 0, 0});
+    initialStatesQ.push(State(Cut(graph->size), 0, 0, 0));
 
     int createdInitialStates = 0;
 
     while (createdInitialStates < countOfInitialStates) {
         auto state = initialStatesQ.front();
         initialStatesQ.pop();
-        --createdInitialStates;
+        createdInitialStates--;
 
         int withoutAccumulator = state.currentWeight;
 
-        for (int i = state.index; i < graph->size; i++) {
+        for (int i = state.index; i < graph->size - maxPartitionSize + state.count; i++) {
             Cut cut = state.cut;
 
             // try with this vertex
             cut[i] = true;
             int nextWeight = withoutAccumulator + graph->vertexWeight(cut, i, i);
-            initialStatesQ.push({cut, state.count + 1, i + 1, nextWeight});
+            initialStatesQ.push(State(cut, state.count + 1, i + 1, nextWeight));
 
             createdInitialStates++;
 
             // try without this vertex
             cut[i] = false;
             nextWeight = (withoutAccumulator += graph->vertexWeight(cut, i, i));
-            initialStatesQ.push({cut, state.count, i + 1, nextWeight});
+            initialStatesQ.push(State(cut, state.count, i + 1, nextWeight));
 
             createdInitialStates++;
         }
@@ -281,9 +296,22 @@ int DFS_BB(int countOfInitialStates = (int) std::pow(2, 5)) {
         initialStatesQ.pop();
     }
 
-//    std::sort(initialStates.begin(), initialStates.end());
+    for (const auto& state: initialStates) {
+        std::cout << state << std::endl;
+    }
 
-    #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
+    std::cout << std::endl << std::endl << std::endl;
+
+    std::sort(initialStates.begin(), initialStates.end());
+
+    // print all initial states
+    for (const auto& state: initialStates) {
+        std::cout << state << std::endl;
+    }
+
+    std::cout << std::endl << std::endl << std::endl;
+
+    #pragma omp parallel for num_threads(4) schedule(static, 4) default(none) shared(bestWeight, initialStates)
     for (const auto &state: initialStates) {
         DFS_BB(state);
     }
@@ -307,7 +335,7 @@ int main(int argc, char **argv) {
     bestWeight = DFS_BB();
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = duration_cast<std::chrono::milliseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
     std::cout << "Global minimum is: " << bestWeight << std::endl;
 
