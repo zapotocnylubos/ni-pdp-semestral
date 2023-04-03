@@ -4,6 +4,8 @@
 #include <fstream>
 #include <limits>
 #include <chrono>
+#include <queue>
+#include <algorithm>
 
 #include <omp.h>
 
@@ -44,6 +46,15 @@ struct State {
     int count;
     int index;
     int currentWeight;
+
+    bool operator<(const State &state) const {
+        return currentWeight < state.currentWeight;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const State &state) {
+        os << state.cut << '[' << state.count << ", " << state.index << ", " << state.currentWeight << ']';
+        return os;
+    }
 };
 
 struct Graph {
@@ -161,6 +172,11 @@ void DFS_BB(const State &state) {
         return;
     }
 
+    // end stop of the recursion
+    if (count > maxPartitionSize) {
+        return;
+    }
+
     // this cannot be better solution
     if (currentWeight >= bestWeight) {
         #pragma omp atomic update
@@ -168,13 +184,12 @@ void DFS_BB(const State &state) {
         return;
     }
 
-    // end stop of the recursion
-    if (count > maxPartitionSize) {
-        return;
-    }
-
     if (index == graph->size) {
         if (count != maxPartitionSize) {
+            return;
+        }
+
+        if (currentWeight >= bestWeight) {
             return;
         }
 
@@ -185,7 +200,13 @@ void DFS_BB(const State &state) {
             }
         }
 
-        std::cout << cut << "-> " << currentWeight << std::endl;
+        std::cout << state << "-> " << currentWeight << std::endl;
+        return;
+    }
+
+    // pre-end stop of the recursion
+    // moving any way is not possible
+    if (index + 1 > graph->size) {
         return;
     }
 
@@ -198,57 +219,74 @@ void DFS_BB(const State &state) {
         return;
     }
 
-    // try with this vertex (need to extend current cut)
     // try with this vertex
     cut[index] = true;
 
     // compute weight with this vertex
     int nextWeight = currentWeight + graph->vertexWeight(cut, index, index);
 
-    DFS_BB({cut, count + 1, index + 1, nextWeight});
+    if (nextWeight < bestWeight && count + 1 <= maxPartitionSize) {
+        DFS_BB({cut, count + 1, index + 1, nextWeight});
+    }
 
-    // try without this vertex (need to extend current cut)
-    // restore the status of the cut
+    // try without this vertex
     cut[index] = false;
 
     // compute weight without this vertex
     nextWeight = currentWeight + graph->vertexWeight(cut, index, index);
 
-    DFS_BB({cut, count, index + 1, nextWeight});
+    if (nextWeight < bestWeight) {
+        DFS_BB({cut, count, index + 1, nextWeight});
+    }
 }
 
-int DFS_BB() {
+int DFS_BB(int countOfInitialStates = 1) {
     bestWeight = std::numeric_limits<int>::max();
 
-    auto initialStates = std::vector<State>();
-    initialStates.push_back({Cut(graph->size), 0, 0, 0});
+    auto initialStatesQ = std::queue<State>();
+    initialStatesQ.push({Cut(graph->size), 0, 0, 0});
 
-//    const int initialStatesSufficientCount = 100;
+    int createdInitialStates = 0;
 
-    for (int a = 0 ; a < 5; a++) {
-        int k = (int) initialStates.size();
-        for (int l = a; l < k; l++) {
-            auto state = initialStates[l];
-            for (int i = state.index; i < graph->size - maxPartitionSize; i++) {
-//                if (initialStates.size() > )
-                Cut cut = state.cut;
-                cut[i] = true;
-                int weight = state.currentWeight + graph->vertexWeight(cut, graph->size, i);
-                initialStates.push_back({cut, state.count + 1, state.index + i + 1, weight});
-            }
+    while (createdInitialStates < countOfInitialStates) {
+        auto state = initialStatesQ.front();
+        initialStatesQ.pop();
+        --createdInitialStates;
+
+        for (int i = state.index; i < graph->size; i++) {
+            Cut cut = state.cut;
+
+            // try with this vertex
+            cut[i] = true;
+            int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index + i + 1, i);
+            initialStatesQ.push({cut, state.count + 1, state.index + i + 1, nextWeight});
+
+            createdInitialStates++;
+
+            // try without this vertex
+            cut[i] = false;
+            nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index + i + 1, i);
+            initialStatesQ.push({cut, state.count, state.index + i + 1, nextWeight});
+
+            createdInitialStates++;
         }
     }
 
-    for (const auto &state: initialStates) {
-        auto cut = state.cut;
-        std::cout << cut << std::endl;
+    auto initialStates = std::vector<State>();
+    while (!initialStatesQ.empty()) {
+        initialStates.push_back(initialStatesQ.front());
+        initialStatesQ.pop();
     }
 
-//    return 0;
+    //std::sort(initialStates.begin(), initialStates.end());
+
+    int i = 0;
+    for (const auto &state: initialStates) {
+        std::cout << i++ << " - " << state << std::endl;
+    }
 
     #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
     for (const auto &state: initialStates) {
-//        DFS_BB({Cut(graph->size), 0, 0, 0});
         DFS_BB(state);
     }
 
