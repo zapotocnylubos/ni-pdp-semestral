@@ -262,19 +262,19 @@ void DFS_BB(State state) {
 int DFS_BB() {
     bestWeight = std::numeric_limits<int>::max();
 
-    auto initialStates = std::vector<State *>();
-    auto initialStatesQ = std::queue<State *>();
+    auto initialStates = std::vector<State>();
+    auto initialStatesQ = std::queue<State>();
 
-    initialStatesQ.push(new State(Cut(graph->size), 0, 0, 0));
+    initialStatesQ.push(State(Cut(graph->size), 0, 0, 0));
 
-    while (!initialStatesQ.empty() && initialStatesQ.front()->index < (2 * maxPartitionSize) / 3) {
-        auto state = *initialStatesQ.front();
+    while (!initialStatesQ.empty() && initialStatesQ.front().index < (2 * maxPartitionSize) / 3) {
+        auto state = initialStatesQ.front();
         initialStatesQ.pop();
 
         auto cut = Cut(state.cut);
 
         int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
-        initialStatesQ.push(new State(cut, state.count, state.index + 1, nextWeight));
+        initialStatesQ.push(State(cut, state.count, state.index + 1, nextWeight));
 
         if (state.count + 1 > maxPartitionSize) continue;
 
@@ -282,7 +282,7 @@ int DFS_BB() {
         cut[state.index] = true;
 
         nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
-        initialStatesQ.push(new State(cut, state.count + 1, state.index + 1, nextWeight));
+        initialStatesQ.push(State(cut, state.count + 1, state.index + 1, nextWeight));
     }
 
     while (!initialStatesQ.empty()) {
@@ -295,8 +295,8 @@ int DFS_BB() {
     std::sort(initialStates.begin(), initialStates.end());
 
     #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
-    for (const auto state: initialStates) {
-        DFS_BB(*state);
+    for (const auto& state: initialStates) {
+        DFS_BB(state);
     }
 
     return bestWeight;

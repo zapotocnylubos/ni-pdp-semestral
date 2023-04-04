@@ -128,7 +128,10 @@ Count of lower bound cuts: 17769340
 
 (15, 30_20) - data (4 threads)
 Global minimum is: 13159
-Time: 18413ms
-Count of recursive calls: 89605723
+Time: 15198ms
+Count of recursive calls: 92058240
 Count of upper bound cuts: 0
-Count of lower bound cuts: 17990560
+Count of lower bound cuts: 18214417
+
+
+
