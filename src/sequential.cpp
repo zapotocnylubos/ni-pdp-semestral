@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
     int bestWeight = DFS_BB(g, maxPartitionSize);
 
     auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = duration_cast<std::chrono::milliseconds>(stop - start);
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
     std::cout << "Global minimum is: " << bestWeight << std::endl;
 

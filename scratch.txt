@@ -96,3 +96,39 @@ Count of recursive calls: 110132776
 Count of upper bound cuts: 0
 Count of lower bound cuts: 22802528
 
+
+
+
+----------------------------------------
+
+(10, 30_10) - sequential
+Global minimum is: 4636
+Time: 1566ms
+Count of recursive calls: 2778985
+Count of upper bound cuts: 491686
+Count of lower bound cuts: 563181
+
+(10, 30_10) - data (4 threads)
+Global minimum is: 4636
+Time: 1141ms
+Count of recursive calls: 2712815
+Count of upper bound cuts: 0
+Count of lower bound cuts: 661789
+
+
+
+(15, 30_20) - sequential
+
+Global minimum is: 13159
+Time: 61415ms
+Count of recursive calls: 95969071
+Count of upper bound cuts: 8735601
+Count of lower bound cuts: 17769340
+
+
+(15, 30_20) - data (4 threads)
+Global minimum is: 13159
+Time: 34702ms
+Count of recursive calls: 89567151
+Count of upper bound cuts: 0
+Count of lower bound cuts: 17984887
