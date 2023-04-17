@@ -366,32 +366,9 @@ void DFS_BB_master(int processes) {
 
     std::cout << "Initial states: " << initialStates.size() << std::endl;
 
-    int syncIndex = (int) initialStates.size() / 5;
-    int currentIndex = 0;
-
     while (!initialStates.empty()) {
         auto state = initialStates.back();
         initialStates.pop_back();
-
-//        if (currentIndex++ % syncIndex == 0) {
-//            std::cout << "Sending sync signal to slaves" << std::endl;
-//
-//            for (int slave = 1; slave < processes; slave++) {
-//                int task = MPITask::SYNC;
-//                MPI_Send(&task, 1, MPI_INT, slave, MPITag::SLAVE_TASK, MPI_COMM_WORLD);
-//            }
-//
-//            std::cout << "Waiting for sync signal from slaves" << std::endl;
-//
-//            for (int slave = 1; slave < processes; slave++) {
-//                int result;
-//                MPI_Recv(&result, 1, MPI_INT, slave, MPITag::SLAVE_RESULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//
-//                if (result < bestWeight) {
-//                    bestWeight = result;
-//                }
-//            }
-//        }
 
         int slave;
         MPI_Recv(&slave, 1, MPI_INT, MPI_ANY_SOURCE, MPITag::SLAVE_AVAILABLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -399,8 +376,8 @@ void DFS_BB_master(int processes) {
         int task = MPITask::JOB;
         MPI_Send(&task, 1, MPI_INT, slave, MPITag::SLAVE_TASK, MPI_COMM_WORLD);
 
-        int stateBuffer[4] = {bestWeight, state.count, state.index, state.currentWeight};
-        MPI_Send(stateBuffer, 4, MPI_INT, slave, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD);
+        int stateBuffer[3] = {state.count, state.index, state.currentWeight};
+        MPI_Send(stateBuffer, 3, MPI_INT, slave, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD);
 
         MPI_Send(state.cut.data, graph->size, MPI_C_BOOL, slave, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD);
     }
@@ -425,7 +402,7 @@ void DFS_BB_master(int processes) {
 }
 
 void DFS_BB_slave(int rank) {
-    int stateBuffer[4];
+    int stateBuffer[3];
     bool cutBuffer[graph->size];
 
     while (true) {
@@ -435,25 +412,17 @@ void DFS_BB_slave(int rank) {
         MPI_Recv(&task, 1, MPI_INT, 0, MPITag::SLAVE_TASK, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         if (task == MPITask::JOB) {
-            MPI_Recv(stateBuffer, 4, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(stateBuffer, 3, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             MPI_Recv(cutBuffer, graph->size, MPI_C_BOOL, 0, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            bestWeight = std::min(bestWeight, stateBuffer[0]);
-
-            auto state = State(stateBuffer[1], stateBuffer[2], stateBuffer[3], Cut(graph->size, cutBuffer));
+            auto state = State(stateBuffer[0], stateBuffer[1], stateBuffer[2], Cut(graph->size, cutBuffer));
             auto initialStates = BFS_Expansion(state, state.index + 1);
 
             #pragma omp parallel for num_threads(2) schedule(dynamic) default(none) shared(initialStates)
             for (const auto &state: initialStates) {
                 DFS_BB(state);
             }
-        }
-
-        if (task == SYNC) {
-            std::cout << "[" << std::setw(3) << rank << "] Syncing" << std::endl;
-            MPI_Send(&bestWeight, 1, MPI_INT, 0, MPITag::SLAVE_RESULT, MPI_COMM_WORLD);
-            continue;
         }
 
         if (task == MPITask::TERMINATE) {
