@@ -290,8 +290,6 @@ int DFS_BB() {
         initialStatesQ.pop();
     }
 
-    std::cout << initialStates.size() << std::endl;
-
     std::sort(initialStates.begin(), initialStates.end());
 
     #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
