@@ -115,7 +115,9 @@ Count of recursive calls: 2712815
 Count of upper bound cuts: 0
 Count of lower bound cuts: 661789
 
-
+(10, 30_10) - mpi (5 processes (1 master + 4 slaves))
+Global minimum is: 4636
+Time: 988ms
 
 (15, 30_20) - sequential
 
@@ -135,3 +137,11 @@ Count of lower bound cuts: 18214417
 
 
 
+(15, 30_20) - mpi (4 processes (1 master + 3 slaves))
+Global minimum is: 13159
+Time: 23704ms
+
+
+(15, 30_20) - mpi (5 processes (1 master + 4 slaves))
+Global minimum is: 13159
+Time: 21453ms
