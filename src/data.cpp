@@ -60,7 +60,7 @@ struct State {
     int index;
     int currentWeight;
 
-    State(const Cut &cut, int count, int index, int currentWeight) :
+    State(int count, int index, int currentWeight, const Cut &cut) :
             cut(cut), count(count),
             index(index), currentWeight(currentWeight) {}
 
@@ -265,7 +265,7 @@ int DFS_BB() {
     auto initialStates = std::vector<State>();
     auto initialStatesQ = std::queue<State>();
 
-    initialStatesQ.push(State(Cut(graph->size), 0, 0, 0));
+    initialStatesQ.push(State(0, 0, 0, Cut(graph->size)));
 
     while (!initialStatesQ.empty() && initialStatesQ.front().index < (2 * maxPartitionSize) / 3) {
         auto state = initialStatesQ.front();
@@ -274,7 +274,7 @@ int DFS_BB() {
         auto cut = Cut(state.cut);
 
         int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
-        initialStatesQ.push(State(cut, state.count, state.index + 1, nextWeight));
+        initialStatesQ.push(State(state.count, state.index + 1, nextWeight, cut));
 
         if (state.count + 1 > maxPartitionSize) continue;
 
@@ -282,7 +282,7 @@ int DFS_BB() {
         cut[state.index] = true;
 
         nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
-        initialStatesQ.push(State(cut, state.count + 1, state.index + 1, nextWeight));
+        initialStatesQ.push(State(state.count + 1, state.index + 1, nextWeight, cut));
     }
 
     while (!initialStatesQ.empty()) {
