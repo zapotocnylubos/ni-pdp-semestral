@@ -417,7 +417,7 @@ void DFS_BB_slave(int rank) {
             MPI_Recv(cutBuffer, graph->size, MPI_C_BOOL, 0, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             auto state = State(stateBuffer[0], stateBuffer[1], stateBuffer[2], Cut(graph->size, cutBuffer));
-            auto initialStates = BFS_Expansion(state, state.index + 1);
+            auto initialStates = BFS_Expansion(state, state.index + 2);
 
             #pragma omp parallel for num_threads(2) schedule(dynamic) default(none) shared(initialStates)
             for (const auto &state: initialStates) {

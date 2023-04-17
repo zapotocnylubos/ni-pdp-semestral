@@ -144,4 +144,5 @@ Time: 23704ms
 
 (15, 30_20) - mpi (5 processes (1 master + 4 slaves))
 Global minimum is: 13159
-Time: 21453ms
+Time: 20428ms
+
