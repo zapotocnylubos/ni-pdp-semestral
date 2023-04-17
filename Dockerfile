@@ -1,7 +1,10 @@
 FROM ubuntu:22.04
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata
-RUN apt-get install -y build-essential git cmake gdb clang make g++ libomp-dev valgrind
+RUN apt-get update
+RUN apt-get install -y tzdata
+RUN apt-get install -y build-essential git cmake gdb clang make g++ valgrind
+RUN apt-get install -y libomp-dev
+RUN apt-get install -y openmpi-bin openmpi-doc libopenmpi-dev
 
 # perf profiler
 RUN apt-get install -y linux-tools-generic && \
