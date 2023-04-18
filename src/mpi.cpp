@@ -234,10 +234,6 @@ struct Graph {
     }
 };
 
-unsigned long long recursiveCounter;
-unsigned long long upperBoundCounter;
-unsigned long long lowerBoundCounter;
-
 Graph *graph;
 int maxPartitionSize, bestWeight = std::numeric_limits<int>::max();
 
@@ -247,9 +243,6 @@ void DFS_BB(State state) {
     int index = state.index;
     int currentWeight = state.currentWeight;
 
-    #pragma omp atomic update
-    recursiveCounter++;
-
     // end stop of the recursion
     if (index > graph->size) {
         return;
@@ -257,8 +250,6 @@ void DFS_BB(State state) {
 
     // this cannot be better solution
     if (currentWeight >= bestWeight) {
-        #pragma omp atomic update
-        upperBoundCounter++;
         return;
     }
 
@@ -290,8 +281,6 @@ void DFS_BB(State state) {
     int lowerBound = graph->cutLowerBound(cut, index);
 
     if (currentWeight + lowerBound >= bestWeight) {
-        #pragma omp atomic update
-        lowerBoundCounter++;
         return;
     }
 
@@ -490,9 +479,6 @@ int main(int argc, char **argv) {
         std::cout << "Global minimum is: " << bestWeight << std::endl;
 
         std::cout << "Time: " << duration.count() << "ms" << std::endl;
-        std::cout << "Count of recursive calls: " << recursiveCounter << std::endl;
-        std::cout << "Count of upper bound cuts: " << upperBoundCounter << std::endl;
-        std::cout << "Count of lower bound cuts: " << lowerBoundCounter << std::endl;
     } else {
         MPI_Send(&rank, 1, MPI_INT, 0,
                  MPITag::SLAVE_INITIALIZED, MPI_COMM_WORLD);
