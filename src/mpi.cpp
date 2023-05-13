@@ -354,7 +354,25 @@ void DFS_BB_master(int processes) {
 
     std::cout << "Initial states: " << initialStates.size() << std::endl;
 
+    int processed = 0;
     while (!initialStates.empty()) {
+        if (processed > 0 && processed % 100 == 0) {
+            for (int slave = 1; slave < processes; slave++) {
+                int dummy;
+                MPI_Recv(&dummy, 1, MPI_INT, slave, MPITag::SLAVE_AVAILABLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                int task = MPITask::SYNC;
+                MPI_Send(&task, 1, MPI_INT, slave, MPITag::SLAVE_TASK, MPI_COMM_WORLD);
+
+                int result;
+                MPI_Recv(&result, 1, MPI_INT, slave, MPITag::SLAVE_RESULT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                if (result < bestWeight) {
+                    bestWeight = result;
+                }
+            }
+        }
+
         auto state = initialStates.back();
         initialStates.pop_back();
 
@@ -364,10 +382,12 @@ void DFS_BB_master(int processes) {
         int task = MPITask::JOB;
         MPI_Send(&task, 1, MPI_INT, slave, MPITag::SLAVE_TASK, MPI_COMM_WORLD);
 
-        int stateBuffer[3] = {state.count, state.index, state.currentWeight};
-        MPI_Send(stateBuffer, 3, MPI_INT, slave, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD);
+        int stateBuffer[4] = {bestWeight, state.count, state.index, state.currentWeight};
+        MPI_Send(stateBuffer, 4, MPI_INT, slave, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD);
 
         MPI_Send(state.cut.data, graph->size, MPI_C_BOOL, slave, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD);
+
+        processed++;
     }
 
     std::cout << "Sending terminate signal to slaves" << std::endl;
@@ -390,7 +410,7 @@ void DFS_BB_master(int processes) {
 }
 
 void DFS_BB_slave(int rank) {
-    int stateBuffer[3];
+    int stateBuffer[4];
     bool cutBuffer[graph->size];
 
     while (true) {
@@ -400,12 +420,18 @@ void DFS_BB_slave(int rank) {
         MPI_Recv(&task, 1, MPI_INT, 0, MPITag::SLAVE_TASK, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         if (task == MPITask::JOB) {
-            MPI_Recv(stateBuffer, 3, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(stateBuffer, 4, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             MPI_Recv(cutBuffer, graph->size, MPI_C_BOOL, 0, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            auto state = State(stateBuffer[0], stateBuffer[1], stateBuffer[2], Cut(graph->size, cutBuffer));
-            auto initialStates = BFS_Expansion(state, state.index + 2);
+            if (stateBuffer[0] < bestWeight) {
+                std::cout << "[" << std::setw(3) << rank << "] "
+                          << "Updating best weight" << stateBuffer[0] << std::endl;
+                bestWeight = stateBuffer[0];
+            }
+
+            auto state = State(stateBuffer[1], stateBuffer[2], stateBuffer[3], Cut(graph->size, cutBuffer));
+            auto initialStates = BFS_Expansion(state, state.index + 7);
 
             #pragma omp parallel for schedule(dynamic) default(none) shared(initialStates)
             for (const auto &state: initialStates) {
@@ -413,8 +439,16 @@ void DFS_BB_slave(int rank) {
             }
         }
 
+        if (task == MPITask::SYNC) {
+            std::cout << "[" << std::setw(3) << rank << "] "
+                      << "Sync" << std::endl;
+            MPI_Send(&bestWeight, 1, MPI_INT, 0, MPITag::SLAVE_RESULT, MPI_COMM_WORLD);
+            continue;
+        }
+
         if (task == MPITask::TERMINATE) {
-            std::cout << "[" << std::setw(3) << rank << "] Terminating" << std::endl;
+            std::cout << "[" << std::setw(3) << rank << "] "
+                      << "Terminating" << std::endl;
             MPI_Send(&bestWeight, 1, MPI_INT, 0, MPITag::SLAVE_RESULT, MPI_COMM_WORLD);
             break;
         }
@@ -430,6 +464,9 @@ int main(int argc, char **argv) {
     maxPartitionSize = std::stoi(argv[1]);
     auto file = argv[2];
 
+    std::cout << "Max partition size: " << maxPartitionSize << std::endl;
+    std::cout << "File: " << file << std::endl;
+
     int MPIError = MPI_Init(&argc, &argv);
 
     if (MPIError != 0) {
@@ -443,10 +480,12 @@ int main(int argc, char **argv) {
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    std::cout << "[" << std::setw(3) << rank << "] OMP available cores: " << omp_get_num_procs() << std::endl;
+    std::cout << "[" << std::setw(3) << rank << "] "
+              << "OMP available cores: " << omp_get_num_procs() << std::endl;
 
     if (rank == 0) {
-        std::cout << "MPI processes: " << processes << std::endl;
+        std::cout << "[" << std::setw(3) << rank << "] "
+                  << "MPI processes: " << processes << std::endl;
 
         graph = new Graph(file);
 
@@ -459,7 +498,8 @@ int main(int argc, char **argv) {
             MPI_Recv(&slave, 1, MPI_INT, i,
                      MPITag::SLAVE_INITIALIZED, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            std::cout << "[" << std::setw(3) << slave << "] Initialized" << std::endl;
+            std::cout << "[" << std::setw(3) << slave << "] "
+                      << "Initialized" << std::endl;
 
             MPI_Send(&graph->size, 1, MPI_INT, slave,
                      MPITag::SLAVE_INITIALIZE_GRAPH_SIZE, MPI_COMM_WORLD);
@@ -478,7 +518,6 @@ int main(int argc, char **argv) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
         std::cout << "Global minimum is: " << bestWeight << std::endl;
-
         std::cout << "Time: " << duration.count() << "ms" << std::endl;
     } else {
         MPI_Send(&rank, 1, MPI_INT, 0,
@@ -493,7 +532,8 @@ int main(int argc, char **argv) {
         MPI_Recv(flatGraphBuffer, flatGraphBufferSize, MPI_INT, 0,
                  MPITag::SLAVE_INITIALIZE_GRAPH, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        std::cout << "[" << std::setw(3) << rank << "] Received graph" << std::endl;
+        std::cout << "[" << std::setw(3) << rank << "] "
+                  << "Received graph" << std::endl;
 
         graph = new Graph(graphSize, flatGraphBuffer);
 

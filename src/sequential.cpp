@@ -165,6 +165,9 @@ int main(int argc, char **argv) {
     auto maxPartitionSize = std::stoi(argv[1]);
     auto file = argv[2];
 
+    std::cout << "Max partition size: " << maxPartitionSize << std::endl;
+    std::cout << "File: " << file << std::endl;
+
     auto g = Graph(file);
 
     auto start = std::chrono::high_resolution_clock::now();

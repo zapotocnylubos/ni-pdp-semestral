@@ -63,7 +63,7 @@ INFINIBAND="false"
 # | Parallel program with arguments.                                          |
 # |                                                                           |
 #  ===========================================================================
-MY_PARALLEL_PROGRAM="/home/zapotlub/pdp/ni_pdp_mpi 15 ./tests/provided/30_20/in.txt"
+MY_PARALLEL_PROGRAM="OMP_NUM_THREADS=18 /home/zapotlub/pdp/ni_pdp_mpi 5 OMP_NUM_THREADS=18 /home/zapotlub/pdp/tests/provided/10_5/in.txt"
 
 #  ===========================================================================
 # |                                                                           |

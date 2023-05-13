@@ -27,4 +27,4 @@
 # Do not change.
 #$ -pe ompi 1
 
-/home/zapotlub/pdp/ni_pdp_data 15 ./tests/provided/30_20/in.txt
+OMP_NUM_THREADS=4 /home/zapotlub/pdp/ni_pdp_data 5 OMP_NUM_THREADS=4 /home/zapotlub/pdp/tests/provided/10_5/in.txt

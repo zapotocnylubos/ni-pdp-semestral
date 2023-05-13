@@ -232,6 +232,9 @@ int main(int argc, char **argv) {
     maxPartitionSize = std::stoi(argv[1]);
     auto file = argv[2];
 
+    std::cout << "Max partition size: " << maxPartitionSize << std::endl;
+    std::cout << "File: " << file << std::endl;
+
     graph = new Graph(file);
 
     std::cout << "OMP available cores: " << omp_get_num_procs() << std::endl;
