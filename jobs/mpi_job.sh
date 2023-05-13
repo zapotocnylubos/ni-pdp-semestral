@@ -63,7 +63,7 @@ INFINIBAND="false"
 # | Parallel program with arguments.                                          |
 # |                                                                           |
 #  ===========================================================================
-MY_PARALLEL_PROGRAM="/home/zapotlub/pdp/ni_pdp_mpi 15 ./tests/provided/30_20/in.txt"
+MY_PARALLEL_PROGRAM="/home/zapotlub/pdp/ni_pdp_mpi PARAM_A /home/zapotlub/pdp/tests/provided/GRAPH_SIZE/in.txt"
 
 #  ===========================================================================
 # |                                                                           |

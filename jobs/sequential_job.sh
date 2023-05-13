@@ -27,4 +27,4 @@
 # Do not change.
 #$ -pe ompi 1
 
-/home/zapotlub/pdp/ni_pdp_sequential 15 ./tests/provided/30_20/in.txt
+/home/zapotlub/pdp/ni_pdp_sequential PARAM_A /home/zapotlub/pdp/tests/provided/GRAPH_SIZE/in.txt

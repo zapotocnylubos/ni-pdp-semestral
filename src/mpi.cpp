@@ -481,7 +481,10 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     std::cout << "[" << std::setw(3) << rank << "] "
-              << "OMP available cores: " << omp_get_num_procs() << std::endl;
+              << "OMP available processors: " << omp_get_num_procs() << std::endl;
+
+    std::cout << "[" << std::setw(3) << rank << "] "
+              << "OMP available threads: " << omp_get_max_threads() << std::endl;
 
     if (rank == 0) {
         std::cout << "[" << std::setw(3) << rank << "] "

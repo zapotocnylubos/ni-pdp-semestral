@@ -313,7 +313,8 @@ int main(int argc, char **argv) {
 
     graph = new Graph(file);
 
-    std::cout << "OMP available cores: " << omp_get_num_procs() << std::endl;
+    std::cout << "OMP available processors: " << omp_get_num_procs() << std::endl;
+    std::cout << "OMP available threads: " << omp_get_max_threads() << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
 
