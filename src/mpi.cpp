@@ -115,8 +115,7 @@ struct State {
     }
 
     friend std::ostream &operator<<(std::ostream &os, const State &state) {
-        os << state.cut << '[' << state.count << ", " << state.index << ", " << state.currentWeight << ']';
-        return os;
+        return os << state.cut;
     }
 };
 
@@ -408,7 +407,7 @@ void DFS_BB_slave(int rank) {
             auto state = State(stateBuffer[0], stateBuffer[1], stateBuffer[2], Cut(graph->size, cutBuffer));
             auto initialStates = BFS_Expansion(state, state.index + 2);
 
-            #pragma omp parallel for num_threads(2) schedule(dynamic) default(none) shared(initialStates)
+            #pragma omp parallel for schedule(dynamic) default(none) shared(initialStates)
             for (const auto &state: initialStates) {
                 DFS_BB(state);
             }
@@ -443,6 +442,8 @@ int main(int argc, char **argv) {
 
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    std::cout << "[" << std::setw(3) << rank << "] OMP available cores: " << omp_get_num_procs() << std::endl;
 
     if (rank == 0) {
         std::cout << "MPI processes: " << processes << std::endl;

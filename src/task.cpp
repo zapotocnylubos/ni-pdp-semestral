@@ -214,7 +214,7 @@ void DFS_BB(const Cut &cut, int count, int index, int currentWeight) {
 int DFS_BB() {
     bestWeight = std::numeric_limits<int>::max();
 
-    #pragma omp parallel num_threads(4) default(none) firstprivate(graph)
+    #pragma omp parallel default(none) firstprivate(graph)
     {
         #pragma omp single
         DFS_BB(Cut(graph->size), 0, 0, 0);
@@ -233,6 +233,8 @@ int main(int argc, char **argv) {
     auto file = argv[2];
 
     graph = new Graph(file);
+
+    std::cout << "OMP available cores: " << omp_get_num_procs() << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
 

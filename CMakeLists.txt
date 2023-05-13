@@ -16,4 +16,5 @@ add_executable(ni_pdp_mpi src/mpi.cpp)
 # Link OpenMP library to executables
 target_link_libraries(ni_pdp_task PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(ni_pdp_data PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(ni_pdp_mpi PRIVATE OpenMP::OpenMP_CXX)
 target_link_libraries(ni_pdp_mpi PRIVATE MPI::MPI_CXX)

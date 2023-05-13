@@ -80,8 +80,7 @@ struct State {
     }
 
     friend std::ostream &operator<<(std::ostream &os, const State &state) {
-        os << state.cut << '[' << state.count << ", " << state.index << ", " << state.currentWeight << ']';
-        return os;
+        return os << state.cut;
     }
 };
 
@@ -217,7 +216,7 @@ void DFS_BB(State state) {
             }
         }
 
-        std::cout << state << "-> " << currentWeight << std::endl;
+        std::cout << state << " -> " << currentWeight << std::endl;
         return;
     }
 
@@ -292,8 +291,8 @@ int DFS_BB() {
 
     std::sort(initialStates.begin(), initialStates.end());
 
-    #pragma omp parallel for num_threads(4) schedule(dynamic) default(none) shared(initialStates)
-    for (const auto& state: initialStates) {
+    #pragma omp parallel for schedule(dynamic) default(none) shared(initialStates, std::cout)
+    for (const auto &state: initialStates) {
         DFS_BB(state);
     }
 
@@ -310,6 +309,8 @@ int main(int argc, char **argv) {
     auto file = argv[2];
 
     graph = new Graph(file);
+
+    std::cout << "OMP available cores: " << omp_get_num_procs() << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
 
