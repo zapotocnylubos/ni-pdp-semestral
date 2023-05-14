@@ -72,6 +72,7 @@ MY_PARALLEL_PROGRAM="/home/zapotlub/pdp/ni_pdp_mpi PARAM_A /home/zapotlub/pdp/te
 #  ===========================================================================
 # export MY_VARIABLE1="..."
 # export MY_VARIABLE2="..."
+export OMP_NUM_THREADS=
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -63,7 +63,7 @@ INFINIBAND="false"
 # | Parallel program with arguments.                                          |
 # |                                                                           |
 #  ===========================================================================
-MY_PARALLEL_PROGRAM="OMP_NUM_THREADS=4 /home/zapotlub/pdp/ni_pdp_mpi 5 /home/zapotlub/pdp/tests/provided/10_5/in.txt"
+MY_PARALLEL_PROGRAM="/home/zapotlub/pdp/ni_pdp_mpi 5 /home/zapotlub/pdp/tests/provided/10_5/in.txt"
 
 #  ===========================================================================
 # |                                                                           |
@@ -72,6 +72,7 @@ MY_PARALLEL_PROGRAM="OMP_NUM_THREADS=4 /home/zapotlub/pdp/ni_pdp_mpi 5 /home/zap
 #  ===========================================================================
 # export MY_VARIABLE1="..."
 # export MY_VARIABLE2="..."
+export OMP_NUM_THREADS=4
 
 
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

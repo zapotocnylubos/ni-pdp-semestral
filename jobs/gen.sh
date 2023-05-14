@@ -51,7 +51,7 @@ for combination in "${combinations[@]}"; do
     sed \
       -e "s|PARAM_A|$1|g" \
       -e "s|GRAPH_SIZE|$2|g" \
-      -e "s|/home/zapotlub/pdp/ni_pdp_|OMP_NUM_THREADS=$threads /home/zapotlub/pdp/ni_pdp_|g" \
+      -e "s|OMP_NUM_THREADS=|OMP_NUM_THREADS=$threads|g" \
       mpi_job.sh > suite/$suite/mpi/$threads/mpi_job.sh
   done
 done
