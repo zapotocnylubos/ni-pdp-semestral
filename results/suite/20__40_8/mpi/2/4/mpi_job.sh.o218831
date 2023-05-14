@@ -1,0 +1,81 @@
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+[  0] OMP available processors: 20
+[  0] OMP available threads: 4
+[  0] MPI processes: 2
+[  1] OMP available processors: 20
+[  1] OMP available threads: 4
+[  1] Initialized
+[  1] Received graph
+Initial states: 8192
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync

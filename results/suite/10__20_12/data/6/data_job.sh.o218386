@@ -1,0 +1,20 @@
+Max partition size: 10
+File: /home/zapotlub/pdp/tests/provided/20_12/in.txt
+OMP available processors: 20
+OMP available threads: 6
+0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 0 0 0 0  -> 5890
+0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 0 1 0 0 0  -> 5832
+0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 0 0 1 0 0  -> 5500
+0 0 0 0 0 0 1 1 1 1 1 0 0 1 1 1 0 1 1 0  -> 5469
+1 1 0 1 1 1 0 1 1 1 0 0 0 0 0 0 0 1 0 1  -> 5425
+1 1 0 1 1 1 0 1 1 0 0 0 0 0 0 0 0 1 1 1  -> 5349
+1 1 1 1 0 1 1 0 0 0 0 1 1 0 0 0 1 0 0 1  -> 5276
+0 0 1 1 0 1 1 1 1 1 1 0 1 0 0 0 0 1 0 0  -> 5177
+0 0 1 1 0 1 1 1 1 1 1 0 0 1 0 0 0 1 0 0  -> 5155
+0 0 1 1 0 1 1 1 0 0 1 1 1 0 1 0 1 0 0 0  -> 5071
+0 1 1 1 0 1 1 1 1 1 1 0 0 0 0 0 0 1 0 0  -> 5060
+Global minimum is: 5060
+Time: 129ms
+Count of recursive calls: 223603
+Count of upper bound cuts: 0
+Count of lower bound cuts: 50881

@@ -1,0 +1,12 @@
+Max partition size: 5
+File: /home/zapotlub/pdp/tests/provided/10_6b/in.txt
+OMP available processors: 20
+OMP available threads: 6
+0 1 1 0 0 1 1 1 0 0 -> 1700
+0 1 1 0 0 1 0 1 1 0 -> 16000
+ 1 1 0 0 1 0 1 0 1 -> 1300
+Global minimum is: 1300
+Time: 16ms
+Count of recursive calls: 819
+Count of upper bound cuts: 175
+Count of lower bound cuts: 114

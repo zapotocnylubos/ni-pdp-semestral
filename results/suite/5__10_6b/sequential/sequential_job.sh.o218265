@@ -1,0 +1,10 @@
+Max partition size: 5
+File: /home/zapotlub/pdp/tests/provided/10_6b/in.txt
+1 1 1 1 1 0 0 0 0 0 -> 1500
+1 1 1 1 0 0 1 0 0 0 -> 1400
+1 1 0 1 1 0 1 0 0 0 -> 1300
+Global minimum is: 1300
+Time: 0ms
+Count of recursive calls: 623
+Count of upper bound cuts: 57
+Count of lower bound cuts: 132

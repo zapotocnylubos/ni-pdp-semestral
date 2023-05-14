@@ -1,0 +1,53 @@
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_15/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_15/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_15/in.txt
+[  0] OMP available processors: 20
+[  0] OMP available threads: 16
+[  0] MPI processes: 3
+[  1] OMP available processors: 20
+[  1] OMP available threads: 16
+[  2] OMP available processors: 20
+[  2] OMP available threads: 16
+[  2] Received graph
+[  1] Received graph
+[  1] Initialized
+[  2] Initialized
+Initial states: 8192
+[  1] Sync
+[  2] Sync
+[  2] Updating best weight12249
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Updating best weight11985
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  2] Updating best weight11798
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
