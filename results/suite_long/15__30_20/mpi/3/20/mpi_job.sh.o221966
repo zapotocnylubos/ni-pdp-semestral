@@ -1,0 +1,46 @@
+Max partition size: 15
+File: /home/zapotlub/pdp/tests/provided/30_20/in.txt
+Max partition size: 15
+File: /home/zapotlub/pdp/tests/provided/30_20/in.txt
+Max partition size: 15
+File: /home/zapotlub/pdp/tests/provided/30_20/in.txt
+[  0] OMP available processors: 20
+[  0] OMP available threads: 20
+[  0] MPI processes: 3
+[  2] OMP available processors: 20
+[  2] OMP available threads: 20
+[  1] OMP available processors: 20
+[  1] OMP available threads: 20
+[  1] Initialized
+[  2] Initialized
+[  2] Received graph
+[  1] Received graph
+Initial states: 1024
+[  1] Sync
+[  2] Sync
+[  2] Updating best weight13535
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  2] Updating best weight13278
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+Sending terminate signal to slaves
+Waiting for results from slaves
+[  1] Terminating
+Global minimum is: 13159
+Time: 7926ms
+[  2] Terminating
