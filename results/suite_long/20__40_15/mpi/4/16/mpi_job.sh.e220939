@@ -1,0 +1,12 @@
+--------------------------------------------------------------------------
+ORTE has lost communication with a remote daemon.
+
+  HNP daemon   : [[17528,0],0] on node node-021
+  Remote daemon: [[17528,0],2] on node node-022
+
+This is usually due to either a failure of the TCP network
+connection to the node, or possibly an internal failure of
+the daemon itself. We cannot recover from this failure, and
+therefore will terminate the job.
+--------------------------------------------------------------------------
+[node-021][[17528,1],0][btl_tcp_endpoint.c:796:mca_btl_tcp_endpoint_complete_connect] connect() to 10.0.9.52 failed: Connection refused (111)

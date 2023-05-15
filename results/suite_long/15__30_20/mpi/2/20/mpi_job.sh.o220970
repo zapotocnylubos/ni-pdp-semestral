@@ -1,0 +1,27 @@
+Max partition size: 15
+File: /home/zapotlub/pdp/tests/provided/30_20/in.txt
+Max partition size: 15
+File: /home/zapotlub/pdp/tests/provided/30_20/in.txt
+[  0] OMP available processors: 20
+[  0] OMP available threads: 20
+[  0] MPI processes: 2
+[  1] OMP available processors: 20
+[  1] OMP available threads: 20
+[  1] Initialized
+[  1] Received graph
+Initial states: 1024
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+[  1] Sync
+Sending terminate signal to slaves
+Waiting for results from slaves
+[  1] Terminating
+Global minimum is: 13159
+Time: 11861ms

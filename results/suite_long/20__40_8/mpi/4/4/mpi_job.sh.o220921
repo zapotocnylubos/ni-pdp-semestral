@@ -1,0 +1,295 @@
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+Max partition size: 20
+File: /home/zapotlub/pdp/tests/provided/40_8/in.txt
+[  0] OMP available processors: 20
+[  0] OMP available threads: 4
+[  0] MPI processes: 4
+[  1] OMP available processors: 20
+[  1] OMP available threads: 4
+[  2] OMP available processors: 20
+[  2] OMP available threads: 4
+[  3] OMP available processors: 20
+[  3] OMP available threads: 4
+[  1] Initialized
+[  2] Initialized
+[  3] Initialized
+[  2] Received graph
+[  3] Received graph
+[  1] Received graph
+Initial states: 8192
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5765
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5631
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5568
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5433
+[  1] Updating best weight5433
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Updating best weight5355
+[  3] Updating best weight5355
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Updating best weight5256
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5219
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight5097
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  3] Updating best weight5062
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Updating best weight5042
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight4929
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  3] Sync
+[  2] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  3] Updating best weight4923
+[  2] Updating best weight4923
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Updating best weight4853
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight4841
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight4833
+[  3] Updating best weight4833
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  2] Updating best weight4690
+[  1] Updating best weight4690
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+[  1] Sync
+[  2] Sync
+[  3] Sync
+Sending terminate signal to slaves
+Waiting for results from slaves
+[  1] Terminating
+[  3] Terminating
+Global minimum is: 4690
+Time: 129074ms
+[  2] Terminating
