@@ -1,0 +1,191 @@
+\documentclass[epsf,epic,eepic,eepicemu]{article}\oddsidemargin=-5mm
+\evensidemargin=-5mm\marginparwidth=.08in \marginparsep=.01in
+\marginparpush=5pt\topmargin=-15mm\headheight=12pt
+\textwidth=15cm\columnsep=2mm
+\columnseprule=1pt\parindent=15pt\parskip=4pt
+
+\usepackage[T1]{fontenc}
+\usepackage[czech]{babel} % recommended if you write in Czech
+
+\usepackage{xcolor}
+\definecolor{codeblue}{rgb}{0.2,0.2,1}
+\definecolor{codered}{rgb}{1,0.2,0.2}
+\definecolor{codegreen}{rgb}{0.2,0.6,0.2}
+\definecolor{codemagenta}{rgb}{0.6,0.2,0.6}
+
+\usepackage{float}
+
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\small,
+    language=C,
+    tabsize=2,
+    showstringspaces=false,
+    breaklines=true,
+    captionpos=b,
+    keywordstyle=\color{codeblue}\ttfamily,
+    stringstyle=\color{codered}\ttfamily,
+    commentstyle=\color{codegreen}\ttfamily,
+    morecomment=[l][\color{codemagenta}]{\#}
+}
+
+\usepackage{caption}
+\renewcommand{\lstlistingname}{Kód}% Listing -> Kód
+
+\begin{document}
+\begin{center}
+\bf Semestrální projekt NI-PDP 2022/2023\\[5mm]
+    Paralelní algoritmus pro hledání\\minimálního hranového řezu hranově ohodnoceného grafu\\[5mm] 
+       Bc. Luboš Zápotočný\\[5mm]
+FIT ČVUT\\Thákurova 9, 160 00 Praha 6\\[2mm]
+\today
+\end{center}
+
+\section{Definice pojmů a popis sekvenčního algoritmu}
+
+V této kapitole se budeme věnovat definici problému a popisu sekvenčního algoritmu pro řešení minimálního hranového řezu v hranově ohodnoceném grafu. Nejprve připomeneme základní pojmy týkající se grafů a hranového řezu a poté představíme konkrétní problém, který se v této práci řešil.
+
+Problém minimálního hranového řezu v hranově ohodnoceném grafu spočívá v nalezení dvou disjunktních podmnožin uzlů, takzvaných X a Y, takových, že součet ohodnocení všech hran spojujících uzly z obou množin je minimální. Tento problém má mnoho praktických aplikací, například v oblasti sítí, kde se hledají nejlevnější cesty mezi uzly sítě.
+
+Vstupní data obsahují číslo reprezentující počet vrcholů v grafu a následně reprezentaci ohodnocení hran pomocí matice sousednosti. Ukázka vstupních dat je vyobrazena v ukázce \ref{lst:inputExample}.
+
+\begin{lstlisting}[label=lst:inputExample, caption={Vstupní data},language={}]
+10
+     0   112     0     0    98    80     0     0    91   102
+   112     0    90     0     0     0     0   119    96     0
+     0    90     0     0   104   111    82     0     0   107
+     0     0     0     0     0   114    96     0     0     0
+    98     0   104     0     0   118    80    88     0     0
+    80     0   111   114   118     0   105   106     0   105
+     0     0    82    96    80   105     0   109    93    99
+     0   119     0     0    88   106   109     0     0    83
+    91    96     0     0     0     0    93     0     0    95
+   102     0   107     0     0   105    99    83    95     0
+\end{lstlisting}
+
+Sekvenční algoritmus pro řešení tohoto problému je založen na postupném procházení některých (nikoli všech) kombinací podmnožin uzlů X a Y a hledání takové kombinace, která minimalizuje součet ohodnocení hran mezi nimi. 
+
+Některé kombinace algoritmus vynechává, jelikož nemůžou vést k lepšímu řešení, než je aktuálně nalezené minimum. Při průchodu stromem možných kombinací některé podstromy můžeme vynechat. Této metodě se říká Branch and Bound.
+
+Princip prořezávání pomocí Branch and Bound spočívá v systematickém prohledávání stromu kombinací s cílem najít optimální řešení s co nejmenším počtem vyhodnocených kombinací. Algoritmus začíná v kořeni stromu a postupně prochází všechny jeho větve, přičemž se snaží minimalizovat horní hranici ceny řešení a zároveň maximalizovat dolní hranici ceny řešení. Toho se dosahuje pomocí prořezávání podstromů, které nemohou obsahovat optimální řešení.
+
+Prořezávání probíhá pomocí dvou technik: dolních a horních odhadů. Dolní odhady se používají k identifikaci podstromů, které neobsahují optimální řešení, a mohou být tedy bezpečně prořezány. Horní odhady se používají k minimalizaci počtu vyhodnocených kombinací tím, že prořezávají podstromy, jejichž řešení by bylo horší než nejlepší nalezené řešení. Ukázka kódu \ref{lst:cutUpperBound} zobrazuje implementaci horního řezu. Ukázka kódu \ref{lst:cutLowerBound} znázorněna podmínka pro řez pomocí dolního odhadu.
+
+\begin{lstlisting}[float,label=lst:cutUpperBound, caption={Horní řez}]
+if (currentWeight >= bestWeight) {
+    upperBoundCounter++;
+    return;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[float,label=lst:cutLowerBound, caption={Dolní řez}]
+int lowerBound = graph.cutLowerBound(cut, index);
+
+if (currentWeight + lowerBound >= bestWeight) {
+    lowerBoundCounter++;
+    return;
+}
+\end{lstlisting}
+
+Dolní odhad je spočítán tak, že pro každý zatím nepřiřazený uzel grafu v daném mezistavu s částečným řezem vypočteme, o kolik by se váha řezu zvýšila, pokud by tento uzel patřil do X, o kolik by se zvýšila, pokud by tento uzel patřil do Y a vezmeme menší z těchto dvou hodnot a tato minima posčítáme pro všechny nepřiřazené uzly.
+
+Cílem prořezávání stromu kombinací pomocí Branch and Bound je minimalizovat počet vyhodnocených kombinací a najít optimální řešení. Tento algoritmus je velmi účinný pro řešení problémů, kde je prostor kombinací velký a výpočetní čas je omezený. \cite{coursesPDPBFS}
+
+Rekurzivní části algoritmu jsou vyobrazeny na ukázkách \ref{lst:recursiveDef} a \ref{lst:recursiveCall}.
+
+\begin{lstlisting}[float,label=lst:recursiveDef, caption={Prototyp rekurzivní funkce}]
+void DFS_BB(const Graph &graph, int maxPartitionSize,
+            bool *cut, int count, int index,
+            int currentWeight, int &bestWeight);
+\end{lstlisting}
+
+\begin{lstlisting}[float,label=lst:recursiveCall, caption={Rekurzivní volání}]
+// try with this vertex
+cut[index] = true;
+
+// try with this vertex (need to extend current cut)
+DFS_BB(graph, maxPartitionSize,
+       cut, count + 1, index + 1,
+       currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
+
+// restore the status of the cut
+cut[index] = false;
+
+// try without this vertex (need to extend current cut)
+DFS_BB(graph, maxPartitionSize,
+       cut, count, index + 1,
+       currentWeight + graph.vertexWeight(cut, index, index), bestWeight);
+\end{lstlisting}
+
+Za předpokladu, že je nalezeno lepší řešení, je tato hodnota uložena a rekurzivní prohledávání této cesty ve stromu kombinací je u konce. Kód \ref{lst:recursiveBest} zobrazuje část rekurzivní funkce, která kontroluje aktuální váhu řezu a aktualizuje globální proměnnou v případě nalezení lepšího řešení.
+
+\begin{lstlisting}[float,label=lst:recursiveBest, caption={Prototyp rekurzivní funkce}]
+if (index == graph.size) {
+    if (count != maxPartitionSize) {
+        return;
+    }
+
+    if (currentWeight < bestWeight) {
+        bestWeight = currentWeight;
+    }
+    
+    return;
+}
+\end{lstlisting}
+
+
+
+Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
+odchylky, ktere pri implementaci OpenMP pouzivate.
+Popiste a vysvetlete strukturu celkoveho
+paralelniho algoritmu na urovni procesuu v OpenMP a strukturu kodu
+jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
+procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
+konstanty a parametry pro skalovani algoritmu. Struktura a semantika
+prikazove radky pro spousteni programu.
+
+
+\section{Popis paralelniho algoritmu a jeho implementace v OpenMP - datovy paralelismus}
+
+Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
+odchylky, ktere pri implementaci OpenMP pouzivate.
+Popiste a vysvetlete strukturu celkoveho
+paralelniho algoritmu na urovni procesuu v OpenMP a strukturu kodu
+jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
+procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
+konstanty a parametry pro skalovani algoritmu. Struktura a semantika
+prikazove radky pro spousteni programu.
+
+\section{Popis paralelniho algoritmu a jeho implementace v MPI}
+
+Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
+odchylky, zvlaste u Master-Slave casti. Popiste a vysvetlete strukturu celkoveho
+paralelniho algoritmu na urovni procesuu v MPI a strukturu kodu
+jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
+procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
+konstanty a parametry pro skalovani algoritmu. Struktura a semantika
+prikazove radky pro spousteni programu.
+
+\section{Namerene vysledky a vyhodnoceni}
+
+\begin{enumerate}
+\item Zvolte tri instance problemu s takovou velikosti vstupnich dat, pro ktere ma sekvencni 
+algoritmus casovou slozitost alespon nekolik minut - vice informaci na {\tt http://courses.fit.cvut.cz} v sekci "Organizace cviceni".
+Pro mereni cas potrebny na cteni dat z disku a ulozeni na disk neuvazujte a zakomentujte
+ladici tisky, logy, zpravy a vystupy.
+\item Merte paralelni cas pri pouziti $i=2,\cdot,60$ vypocetnich jader.
+\item Tabulkova a pripadne graficky zpracovane namerene hodnoty casove slozitosti měernych instanci behu programu s popisem instanci dat. Z namerenych dat sestavte grafy zrychleni $S(n,p)$. 
+\item Analyza a hodnoceni vlastnosti paralelniho programu, zvlaste jeho efektivnosti a skalovatelnosti, pripadne popis zjisteneho superlinearniho zrychleni.
+
+\end{enumerate}
+
+\section{Zaver}
+
+Celkove zhodnoceni semestralni prace a zkusenosti ziskanych behem semestru.
+
+\section{Literatura}
+
+\bibliographystyle{unsrt}
+\bibliography{report}
+
+\end{document}
