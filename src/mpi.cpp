@@ -419,25 +419,25 @@ void DFS_BB_slave(int rank) {
         int task;
         MPI_Recv(&task, 1, MPI_INT, 0, MPITag::SLAVE_TASK, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        if (task == MPITask::JOB) {
-            MPI_Recv(stateBuffer, 4, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+if (task == MPITask::JOB) {
+    MPI_Recv(stateBuffer, 4, MPI_INT, 0, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            MPI_Recv(cutBuffer, graph->size, MPI_C_BOOL, 0, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(cutBuffer, graph->size, MPI_C_BOOL, 0, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            if (stateBuffer[0] < bestWeight) {
-                std::cout << "[" << std::setw(3) << rank << "] "
-                          << "Updating best weight" << stateBuffer[0] << std::endl;
-                bestWeight = stateBuffer[0];
-            }
+    if (stateBuffer[0] < bestWeight) {
+        std::cout << "[" << std::setw(3) << rank << "] "
+                  << "Updating best weight" << stateBuffer[0] << std::endl;
+        bestWeight = stateBuffer[0];
+    }
 
-            auto state = State(stateBuffer[1], stateBuffer[2], stateBuffer[3], Cut(graph->size, cutBuffer));
-            auto initialStates = BFS_Expansion(state, state.index + 7);
+    auto state = State(stateBuffer[1], stateBuffer[2], stateBuffer[3], Cut(graph->size, cutBuffer));
+    auto initialStates = BFS_Expansion(state, state.index + 7);
 
-            #pragma omp parallel for schedule(dynamic) default(none) shared(initialStates)
-            for (const auto &state: initialStates) {
-                DFS_BB(state);
-            }
-        }
+    #pragma omp parallel for schedule(dynamic) default(none) shared(initialStates)
+    for (const auto &state: initialStates) {
+        DFS_BB(state);
+    }
+}
 
         if (task == MPITask::SYNC) {
             std::cout << "[" << std::setw(3) << rank << "] "
