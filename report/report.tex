@@ -32,6 +32,9 @@
 \usepackage{caption}
 \renewcommand{\lstlistingname}{Kód}% Listing -> Kód
 
+\usepackage{graphicx}
+\usepackage{url}
+
 \begin{document}
 \begin{center}
 \bf Semestrální projekt NI-PDP 2022/2023\\[5mm]
@@ -133,55 +136,217 @@ if (index == graph.size) {
 }
 \end{lstlisting}
 
+\section{Popis paralelního algoritmu a implementace v OpenMP - taskový paralelismus}
 
+Taskový paralelismus se používá v OpenMP pro paralelizaci běhu algoritmu. Jednotlivé úlohy (nebo podúkoly) jsou přiděleny vláknům k vykonání. V OpenMP lze k vyznačení úloh použít direktivu \uv{\#pragma omp task}, která říká, že se má daná část kódu vykonat jako samostatná úloha. Ukázka této modifikace je zobrazena v kódu \ref{lst:task}. Přidáním těchto direktiv povolujeme spuštění podúkolů paralelně. Je však důležité, aby tuto rekurzivní funkci započalo pouze jedno vlákno. Proto byla vytvořena separátní funkce, jejíž obsah je zobrazen v ukázce kódu \ref{lst:taskStart}.
 
-Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
-odchylky, ktere pri implementaci OpenMP pouzivate.
-Popiste a vysvetlete strukturu celkoveho
-paralelniho algoritmu na urovni procesuu v OpenMP a strukturu kodu
-jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
-procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
-konstanty a parametry pro skalovani algoritmu. Struktura a semantika
-prikazove radky pro spousteni programu.
+\begin{lstlisting}[float,label=lst:task, caption={Modifikace na taskový paralelismus v rekurzivní funkci}]
+// try with this vertex (need to extend current cut)
+#pragma omp task default(none) firstprivate(graph, cut, count, index, currentWeight)
+{
+    // try with this vertex
+    cut[index] = true;
 
+    // compute weight with this vertex
+    int nextWeight = currentWeight+graph->vertexWeight(cut, index, index);
 
-\section{Popis paralelniho algoritmu a jeho implementace v OpenMP - datovy paralelismus}
+    DFS_BB(cut, count + 1, index + 1, nextWeight);
+}
 
-Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
-odchylky, ktere pri implementaci OpenMP pouzivate.
-Popiste a vysvetlete strukturu celkoveho
-paralelniho algoritmu na urovni procesuu v OpenMP a strukturu kodu
-jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
-procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
-konstanty a parametry pro skalovani algoritmu. Struktura a semantika
-prikazove radky pro spousteni programu.
+// try without this vertex (need to extend current cut)
+#pragma omp task default(none) firstprivate(graph, cut, count, index, currentWeight)
+{
+    // restore the status of the cut
+    cut[index] = false;
+
+    // compute weight without this vertex
+    int nextWeight = currentWeight+graph->vertexWeight(cut, index, index);
+
+    DFS_BB(cut, count, index + 1, nextWeight);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[float,label=lst:taskStart, caption={Začátek taskového paralelismu}]
+bestWeight = std::numeric_limits<int>::max();
+
+#pragma omp parallel default(none) firstprivate(graph)
+{
+    #pragma omp single
+    DFS_BB(Cut(graph->size), 0, 0, 0);
+}
+
+return bestWeight;
+\end{lstlisting}
+
+Více podúkolů může být spuštěno současně a vlákna, která jsou k dispozici, mohou vykonávat úlohy paralelně. Každé dvě podúlohy nezávislé a mohou běžet současně bez čekání na dokončení jiných úloh.
+
+Taskový paralelismus je vhodný pro aplikace s dynamickým vytvářením úloh, které mohou být vykonány asynchronně. To může zvýšit využití výpočetních zdrojů a zlepšit výkon aplikace.
+
+\section{Popis paralelního algoritmu a implementace v OpenMP - datový paralelismus}
+
+Datový paralelismus je druh paralelizace, který spočívá v rozdělení dat na části a zpracování těchto částí v paralelních výpočetních jednotkách.
+
+V programu jednotlivá vlákna zpracovávají různé části dat a zpracování probíhá paralelně. Vhodnou implementací datového paralelismu lze výrazně zlepšit výkon programu, zvláště u algoritmů, které pracují s velkými objemy dat.
+
+Datový paralelismu začíná vygenerováním několik počátečních stavů, které se následně v paralelní smyčce nechávají sekvenčně dopočítat.
+
+Sekvenční algoritmus a taskový paralelismus využívání DFS průchod stromem kombinací. Datový paralelismus nejprve provede BFS expanzi z počátečního vrcholu do dané hloubky a tyto stavy poté nechává více vláknově dopočítat. Ukázka této expanze je v kódu \ref{lst:BFSExpansion}. Tento kód projde stromem kombinací až do hloubky $(2 * maxPartitionSize) / 3$, což je experimentálně zvolená hodnota, která vygeneruje dostatečný počet počátečních stavů. Na konci je výsledné pole počáteční stavů setříděné podle částečné aktuální váhy, což zrychluje nalezení menších hodnot, což poté využívá Branch and Bound pro horní řez některých podstromů výpočtu.
+
+\begin{lstlisting}[float,label=lst:BFSExpansion, caption={BFS expanze před zahájením datového paralelismu}]
+auto initialStates = std::vector<State>();
+    auto initialStatesQ = std::queue<State>();
+
+    initialStatesQ.push(State(0, 0, 0, Cut(graph->size)));
+
+    while (!initialStatesQ.empty() && initialStatesQ.front().index < (2 * maxPartitionSize) / 3) {
+        auto state = initialStatesQ.front();
+        initialStatesQ.pop();
+
+        auto cut = Cut(state.cut);
+
+        int nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
+        initialStatesQ.push(State(state.count, state.index + 1, nextWeight, cut));
+
+        if (state.count + 1 > maxPartitionSize) continue;
+
+        cut = Cut(state.cut);
+        cut[state.index] = true;
+
+        nextWeight = state.currentWeight + graph->vertexWeight(cut, state.index, state.index);
+        initialStatesQ.push(State(state.count + 1, state.index + 1, nextWeight, cut));
+    }
+
+    while (!initialStatesQ.empty()) {
+        initialStates.push_back(initialStatesQ.front());
+        initialStatesQ.pop();
+    }
+
+    std::sort(initialStates.begin(), initialStates.end());
+\end{lstlisting}
+
 
 \section{Popis paralelniho algoritmu a jeho implementace v MPI}
 
-Popiste paralelni algoritmus, opet vyjdete ze zadani a presne vymezte
-odchylky, zvlaste u Master-Slave casti. Popiste a vysvetlete strukturu celkoveho
-paralelniho algoritmu na urovni procesuu v MPI a strukturu kodu
-jednotlivych procesu. Napr. jak je naimplemtovana smycka pro cinnost
-procesu v aktivnim stavu i v stavu necinnosti. Jake jste zvolili
-konstanty a parametry pro skalovani algoritmu. Struktura a semantika
-prikazove radky pro spousteni programu.
+MPI (Message Passing Interface) je knihovna umožňující programátorům psát paralelní aplikace pro distribuované systémy, které mohou běžet na mnoha procesorech. MPI aplikace jsou psány jako soubor nezávislých procesů, které se navzájem komunikují pomocí posílání zpráv.
 
-\section{Namerene vysledky a vyhodnoceni}
+MPI umožňuje programátorům psát různé typy paralelních aplikací, včetně datově paralelních a taskově paralelních aplikací. Datově paralelní aplikace pracují s velkými datovými sadami, které jsou rozděleny mezi různé procesory. Každý procesor pracuje s určitou částí dat a výsledky jsou posléze kombinovány. Úlohově paralelní aplikace jsou aplikace, které se skládají z mnoha úloh, které mohou být spuštěny na různých procesorech a mezi sebou komunikují pomocí posílání zpráv.
 
-\begin{enumerate}
-\item Zvolte tri instance problemu s takovou velikosti vstupnich dat, pro ktere ma sekvencni 
-algoritmus casovou slozitost alespon nekolik minut - vice informaci na {\tt http://courses.fit.cvut.cz} v sekci "Organizace cviceni".
-Pro mereni cas potrebny na cteni dat z disku a ulozeni na disk neuvazujte a zakomentujte
-ladici tisky, logy, zpravy a vystupy.
-\item Merte paralelni cas pri pouziti $i=2,\cdot,60$ vypocetnich jader.
-\item Tabulkova a pripadne graficky zpracovane namerene hodnoty casove slozitosti měernych instanci behu programu s popisem instanci dat. Z namerenych dat sestavte grafy zrychleni $S(n,p)$. 
-\item Analyza a hodnoceni vlastnosti paralelniho programu, zvlaste jeho efektivnosti a skalovatelnosti, pripadne popis zjisteneho superlinearniho zrychleni.
+MPI umožňuje programátorům psát paralelní aplikace, které mohou běžet na různých typech hardware, včetně lokálních počítačů, clusterů a superpočítačů. MPI poskytuje také mnoho funkcí pro synchronizaci a komunikaci mezi procesy, což umožňuje programátorům psát robustní paralelní aplikace.
 
-\end{enumerate}
+MPI aplikace se obvykle skládají z řídícího procesu, který koordinuje běh aplikace a koordinuje komunikaci mezi procesy, a mnoha pracovních procesů, které provádějí výpočetní práci. MPI aplikace mohou být napsány v mnoha jazycích, včetně C, C++ a Fortranu. \cite{mpiwiki}
 
-\section{Zaver}
+Úprava z datového paralelismu byla komplikovanější než z taskového na datový paralelismus. Program je rozdělen na dva módy. Proces s $ID = 0$ se stává hlavním procesem a rozesílá mezistavy k dořešení na ostatní procesy, které mohou být i na úplně jiném serveru. MPI varaibta algoritmu stále používá datový paralelismus na úrovni vláken.
 
-Celkove zhodnoceni semestralni prace a zkusenosti ziskanych behem semestru.
+Komunikace probíhá pomocí zpráv, které znázorňuje kód \ref{lst:mpitags}. Ukázka kódu \ref{lst:mpisendjob} demonstruje čekání hlavního procesu na volný pracovní stroj. Pokud je některý stroj volný, odešle zprávu a hlavní proces mu následně pošle mezistav na dopočítání. Odesílání probíhá ve dvou zprávách. První zpráva obsahuje metadata o aktuálním stavu společně s poslední aktualizovanou hodnotu nejlepší nalezené váhy z ostatních procesů. Následující druhá zpráva obsahuje booleanské pole reprezentující aktuální rozdělení vrcholů do množin X a Y.
+
+\begin{lstlisting}[float,label=lst:mpitags, caption={MPI tagy a specifické tasky}]
+enum MPITag {
+    SLAVE_INITIALIZED,
+    SLAVE_INITIALIZE_GRAPH_SIZE,
+    SLAVE_INITIALIZE_GRAPH,
+    SLAVE_TASK,
+    SLAVE_JOB_STATE,
+    SLAVE_JOB_CUT,
+    SLAVE_AVAILABLE,
+    SLAVE_RESULT
+};
+
+enum MPITask {
+    JOB,
+    SYNC,
+    TERMINATE
+};
+\end{lstlisting}
+
+\begin{lstlisting}[float,label=lst:mpisendjob, caption={MPI tagy a specifické tasky}]
+int slave;
+MPI_Recv(&slave, 1, MPI_INT, MPI_ANY_SOURCE, MPITag::SLAVE_AVAILABLE, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+int task = MPITask::JOB;
+MPI_Send(&task, 1, MPI_INT, slave, MPITag::SLAVE_TASK, MPI_COMM_WORLD);
+
+int stateBuffer[4] = {bestWeight, state.count, state.index, state.currentWeight};
+MPI_Send(stateBuffer, 4, MPI_INT, slave, MPITag::SLAVE_JOB_STATE, MPI_COMM_WORLD);
+
+MPI_Send(state.cut.data, graph->size, MPI_C_BOOL, slave, MPITag::SLAVE_JOB_CUT, MPI_COMM_WORLD);
+\end{lstlisting}
+
+Každých sto počátečních mezistavů se všechny pracovní stroje sesynchornizují, aby měli nejaktuálnější nejlepší váhu a jejich interní Branch and Bound řezy byly efektivní.
+
+
+\section{Naměřené výsledky a vyhodnocení}
+
+Na obrázcích \ref{fig:runtime_15__30_20}, \ref{fig:runtime_15__40_8} a \ref{fig:runtime_20__40_8} jsou vyobrazeny časy běhů jednotlivých variant algoritmu. MPI variantz jsou pojmenované podle toho, kolik procesů měli k dispozici = na kolika oddělených strojích mohli pracovat.
+Například mpi\_4 znamená, že program byl spuštěn na jednom stroji, který pracoval jako hlavní proces a na třech strojích, pracujících pouze na výpočtu přidělených podúkolů.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/runtime_15__30_20}
+\caption{Čas běhu s parametrem 15 na grafu 30\_20}
+\label{fig:runtime_15__30_20}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/runtime_15__40_8}
+\caption{Čas běhu s parametrem 15 na grafu 40\_8}
+\label{fig:runtime_15__40_8}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/runtime_20__40_8}
+\caption{Čas běhu s parametrem 20 na grafu 40\_8}
+\label{fig:runtime_20__40_8}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/speedup_15__30_20}
+\caption{Zrychlení oproti sekvenčnímu řešení s parametrem 15 na grafu 30\_20}
+\label{fig:speedup_15__30_20}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/speedup_15__40_8}
+\caption{Zrychlení oproti sekvenčnímu řešení s parametrem 15 na grafu 40\_8}
+\label{fig:speedup_15__40_8}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/speedup_20__40_8}
+\caption{Zrychlení oproti sekvenčnímu řešení s parametrem 20 na grafu 40\_8}
+\label{fig:speedup_20__40_8}
+\end{figure}
+
+Obrázky \ref{fig:efficency_15__30_20}, \ref{fig:efficency_15__40_8} a \ref{fig:efficency_20__40_8} zobrazují efektivitu paralelního zrychlení, které znázorňuje efektivitu zrychlení podle maximálního počtu vláken k dispozici. U MPI úloh je počet vláken násoben počtem výpočetních uzlů.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/efficency_15__30_20}
+\caption{Paralelní efektivita pro vstup s parametrem 15 na grafu 30\_20}
+\label{fig:efficency_15__30_20}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/efficency_15__40_8}
+\caption{Paralelní efektivita pro vstup s parametrem 15 na grafu 40\_8}
+\label{fig:efficency_15__40_8}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=0.75\textwidth]{images/efficency_20__40_8}
+\caption{Paralelní efektivita pro vstup s parametrem 20 na grafu 40\_8}
+\label{fig:efficency_20__40_8}
+\end{figure}
+
+\section{Závěr}
+
+Iterativní práce a postupné modifikace sekvenčního řešení mi dávalo po dobu semestr dobrý smysl a je to takto koncepčně dobře připravené. Doplňkové materiály ke cvičením jsou výborný zdroj pro inspiraci, jakým postupem danou problematiku řešit.
+
+Při použití C++ se mi v některých částech zjednodušila práce s programem (například použitím copy konstruktorů).
+
+Zároveň byla přínosná zkušenost s porovnáním běhu algoritmů na lokálním stroji oproti serverovému clusteru star.
+
+Zde bych chtěl ještě moji práci detailněji prozkoumat, jelikož výsledky prezentované v této zprávě pocházejí ze staru, na lokálním počítači programy běžely vždy téměř lineárně, což se na startu ani v případě taskového či datového paralelismu nepotvrdilo.
 
 \section{Literatura}
 
